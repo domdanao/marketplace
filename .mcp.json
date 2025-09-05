@@ -1,0 +1,20 @@
+{
+	"mcpServers": {
+		"laravel-boost": {
+			"command": "php",
+			"args": [
+				"artisan",
+				"boost:mcp"
+			]
+		},
+		"magpie": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@magpieim/mcp",
+				"--tools=all",
+				"api-key=sk_live_hg9fh4jtQIKMnOWSTD2Dcq"
+			]
+		}
+	}
+}
