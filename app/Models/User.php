@@ -58,6 +58,21 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function cartItems()
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function getCartTotalAttribute(): int
+    {
+        return $this->cartItems()->with('product')->get()->sum('total_price');
+    }
+
+    public function getCartCountAttribute(): int
+    {
+        return $this->cartItems()->sum('quantity');
+    }
+
     public function isBuyer(): bool
     {
         return $this->role === 'buyer';

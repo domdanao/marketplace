@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'magpie' => [
+        'api_key' => env('MAGPIE_API_KEY'),
+        'api_base_url' => env('MAGPIE_API_BASE_URL'),
+        'customers_url' => env('MAGPIE_CUSTOMERS_URL'),
+        'charges_url' => env('MAGPIE_CHARGES_URL'),
+        'checkout_url' => env('MAGPIE_CHECKOUT_URL'),
+        'checkout_callback_success_endpoint' => env('MAGPIE_CHECKOUT_CALLBACK_SUCCESS_ENDPOINT'),
+        'checkout_callback_cancel_endpoint' => env('MAGPIE_CHECKOUT_CALLBACK_CANCEL_ENDPOINT'),
+    ],
+
 ];

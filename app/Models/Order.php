@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Order extends Model
@@ -41,7 +41,7 @@ class Order extends Model
 
         static::creating(function ($order) {
             if (empty($order->order_number)) {
-                $order->order_number = 'ORD-' . strtoupper(Str::random(8));
+                $order->order_number = 'ORD-'.strtoupper(Str::random(8));
             }
         });
     }
@@ -59,6 +59,11 @@ class Order extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class)->latest();
     }
 
     public function isPending(): bool

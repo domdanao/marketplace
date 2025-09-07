@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Category extends Model
@@ -45,5 +45,10 @@ class Category extends Model
     public function activeProducts()
     {
         return $this->hasMany(Product::class)->where('status', 'published');
+    }
+
+    public function stores()
+    {
+        return $this->hasMany(Store::class);
     }
 }
