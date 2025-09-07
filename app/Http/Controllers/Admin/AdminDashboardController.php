@@ -12,6 +12,7 @@ use App\Models\Store;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class AdminDashboardController extends Controller
@@ -405,5 +406,160 @@ class AdminDashboardController extends Controller
             'start' => $start,
             'end' => $end,
         ];
+    }
+
+    /**
+     * File Management Dashboard
+     */
+    public function files(Request $request)
+    {
+        // Get storage statistics
+        $publicStorageSize = $this->getDirectorySize(storage_path('app/public'));
+        $privateStorageSize = $this->getDirectorySize(storage_path('app/private'));
+
+        // Get file counts and types
+        $imageFiles = Product::whereNotNull('images')
+            ->get()
+            ->flatMap(fn ($product) => $product->images ?? [])
+            ->count();
+
+        $digitalFiles = Product::whereNotNull('digital_files')
+            ->get()
+            ->flatMap(fn ($product) => $product->digital_files ?? [])
+            ->count();
+
+        // Get recent uploads (products with recent images/files)
+        $recentUploads = Product::where('updated_at', '>=', now()->subDays(7))
+            ->where(function ($query) {
+                $query->whereNotNull('images')
+                    ->orWhereNotNull('digital_files');
+            })
+            ->with(['store.user'])
+            ->orderBy('updated_at', 'desc')
+            ->take(20)
+            ->get();
+
+        // Get storage usage by store
+        $storageByStore = Product::with('store')
+            ->get()
+            ->groupBy('store_id')
+            ->map(function ($products) {
+                $imageCount = $products->sum(function ($product) {
+                    return count($product->images ?? []);
+                });
+                $fileCount = $products->sum(function ($product) {
+                    return count($product->digital_files ?? []);
+                });
+
+                return [
+                    'store' => $products->first()->store,
+                    'image_count' => $imageCount,
+                    'file_count' => $fileCount,
+                    'total_files' => $imageCount + $fileCount,
+                ];
+            })
+            ->sortByDesc('total_files')
+            ->take(10);
+
+        return Inertia::render('Admin/Files/Index', [
+            'storage_stats' => [
+                'public_size' => $this->formatBytes($publicStorageSize),
+                'private_size' => $this->formatBytes($privateStorageSize),
+                'total_size' => $this->formatBytes($publicStorageSize + $privateStorageSize),
+                'image_files' => $imageFiles,
+                'digital_files' => $digitalFiles,
+                'total_files' => $imageFiles + $digitalFiles,
+            ],
+            'recent_uploads' => $recentUploads,
+            'storage_by_store' => $storageByStore->values(),
+            'filters' => [
+                'search' => $request->search,
+                'type' => $request->type,
+            ],
+        ]);
+    }
+
+    /**
+     * Clean up orphaned files
+     */
+    public function cleanupFiles(Request $request)
+    {
+        $deletedCount = 0;
+        $errors = [];
+
+        try {
+            // Get all referenced images and digital files from products
+            $referencedImages = Product::whereNotNull('images')
+                ->get()
+                ->flatMap(fn ($product) => $product->images ?? [])
+                ->map(fn ($url) => str_replace(Storage::disk('public')->url(''), '', $url))
+                ->toArray();
+
+            $referencedFiles = Product::whereNotNull('digital_files')
+                ->get()
+                ->flatMap(fn ($product) => $product->digital_files ?? [])
+                ->pluck('path')
+                ->toArray();
+
+            // Scan public storage for orphaned images
+            $allImages = collect(Storage::disk('public')->allFiles('products'))
+                ->filter(fn ($file) => ! in_array($file, $referencedImages));
+
+            foreach ($allImages as $file) {
+                if (Storage::disk('public')->delete($file)) {
+                    $deletedCount++;
+                }
+            }
+
+            // Scan private storage for orphaned digital files
+            $allFiles = collect(Storage::disk('local')->allFiles('digital'))
+                ->filter(fn ($file) => ! in_array($file, $referencedFiles));
+
+            foreach ($allFiles as $file) {
+                if (Storage::disk('local')->delete($file)) {
+                    $deletedCount++;
+                }
+            }
+
+        } catch (\Exception $e) {
+            $errors[] = $e->getMessage();
+        }
+
+        if (count($errors) > 0) {
+            return back()->with('error', 'File cleanup completed with errors: '.implode(', ', $errors));
+        }
+
+        return back()->with('success', "File cleanup completed. Deleted {$deletedCount} orphaned files.");
+    }
+
+    /**
+     * Get directory size in bytes
+     */
+    private function getDirectorySize(string $directory): int
+    {
+        $size = 0;
+        if (is_dir($directory)) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory)) as $file) {
+                if ($file->isFile()) {
+                    $size += $file->getSize();
+                }
+            }
+        }
+
+        return $size;
+    }
+
+    /**
+     * Format bytes to human readable format
+     */
+    private function formatBytes(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+
+        for ($i = 0; $bytes > 1024 && $i < 4; $i++) {
+            $bytes /= 1024;
+        }
+
+        return round($bytes, 2).' '.$units[$i];
     }
 }

@@ -90,6 +90,12 @@ Route::middleware(['auth', 'verified', 'merchant'])->prefix('merchant')->name('m
     Route::post('/products/{product}/publish', [App\Http\Controllers\Merchant\ProductController::class, 'publish'])->name('products.publish');
     Route::post('/products/{product}/unpublish', [App\Http\Controllers\Merchant\ProductController::class, 'unpublish'])->name('products.unpublish');
 
+    // File upload routes
+    Route::post('/products/upload-images', [App\Http\Controllers\Merchant\ProductController::class, 'uploadImages'])->name('products.upload-images');
+    Route::post('/products/upload-files', [App\Http\Controllers\Merchant\ProductController::class, 'uploadDigitalFiles'])->name('products.upload-files');
+    Route::delete('/products/delete-image', [App\Http\Controllers\Merchant\ProductController::class, 'deleteImage'])->name('products.delete-image');
+    Route::delete('/products/delete-file', [App\Http\Controllers\Merchant\ProductController::class, 'deleteDigitalFile'])->name('products.delete-file');
+
     Route::get('/orders', function () {
         return response()->json(['message' => 'Merchant Orders']);
     })->name('orders');
@@ -121,6 +127,26 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     // Analytics
     Route::get('/analytics', [App\Http\Controllers\Admin\AdminDashboardController::class, 'analytics'])->name('analytics');
+
+    // File management
+    Route::get('/files', [App\Http\Controllers\Admin\AdminDashboardController::class, 'files'])->name('files');
+    Route::post('/files/cleanup', [App\Http\Controllers\Admin\AdminDashboardController::class, 'cleanupFiles'])->name('files.cleanup');
+});
+
+// Digital File Downloads (authenticated users only)
+Route::middleware('auth')->group(function () {
+    Route::get('/digital-files/{productId}/{filename}', [App\Http\Controllers\DigitalFileController::class, 'download'])
+        ->name('digital-files.download')
+        ->where(['productId' => '[0-9a-f-]{36}', 'filename' => '.*']);
+    Route::get('/digital-files/{productId}/{filename}/preview', [App\Http\Controllers\DigitalFileController::class, 'preview'])
+        ->name('digital-files.preview')
+        ->where(['productId' => '[0-9a-f-]{36}', 'filename' => '.*']);
+});
+
+// Documentation/Markdown viewer routes (accessible to all authenticated users)
+Route::middleware('auth')->prefix('docs')->name('docs.')->group(function () {
+    Route::get('/', [App\Http\Controllers\MarkdownController::class, 'index'])->name('index');
+    Route::get('/{filename}', [App\Http\Controllers\MarkdownController::class, 'show'])->name('show');
 });
 
 require __DIR__.'/settings.php';

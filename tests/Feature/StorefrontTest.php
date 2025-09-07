@@ -88,20 +88,31 @@ it('filters products by price range', function () {
     $category = Category::factory()->create();
     $store = Store::factory()->create(['status' => 'approved']);
 
-    Product::factory()->create([
+    // Create product with price below filter ($50)
+    Product::create([
         'store_id' => $store->id,
         'category_id' => $category->id,
-        'price' => 5000, // $50
+        'name' => 'Cheap Product',
+        'slug' => 'cheap-product',
+        'description' => 'A cheap product',
+        'price' => 50, // $50 (model converts to 5000 cents)
+        'quantity' => 10,
         'status' => 'published',
     ]);
 
-    Product::factory()->create([
+    // Create product with price above filter ($150)
+    Product::create([
         'store_id' => $store->id,
         'category_id' => $category->id,
-        'price' => 15000, // $150
+        'name' => 'Expensive Product',
+        'slug' => 'expensive-product',
+        'description' => 'An expensive product',
+        'price' => 150, // $150 (model converts to 15000 cents)
+        'quantity' => 10,
         'status' => 'published',
     ]);
 
+    // Only the $150 product should be returned for price_min=100
     $this->get('/?price_min=100')
         ->assertSuccessful()
         ->assertInertia(fn ($page) => $page

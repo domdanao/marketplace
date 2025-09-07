@@ -15,10 +15,10 @@ class StorefrontController extends Controller
         $products = Product::published()
             ->with(['store', 'category'])
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%")
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
                     ->orWhereHas('store', function ($q) use ($search) {
-                        $q->where('name', 'ilike', "%{$search}%");
+                        $q->where('name', 'like', "%{$search}%");
                     });
             })
             ->when($request->category, function ($query, $category) {
@@ -110,7 +110,7 @@ class StorefrontController extends Controller
             ->withQueryString();
 
         return Inertia::render('Storefront/Stores/Show', [
-            'store' => $store->load('category'),
+            'store' => $store,
             'products' => $products,
         ]);
     }
@@ -118,25 +118,19 @@ class StorefrontController extends Controller
     public function stores(Request $request)
     {
         $stores = Store::approved()
-            ->with(['category'])
             ->withCount(['products' => function ($query) {
                 $query->published();
             }])
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%");
-            })
-            ->when($request->category, function ($query, $category) {
-                $query->whereHas('category', function ($q) use ($category) {
-                    $q->where('slug', $category);
-                });
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             })
             ->orderBy('name')
             ->paginate(12)
             ->withQueryString();
 
-        $categories = Category::withCount(['stores' => function ($query) {
-            $query->approved();
+        $categories = Category::withCount(['products' => function ($query) {
+            $query->published();
         }])->orderBy('name')->get();
 
         return Inertia::render('Storefront/Stores/Index', [
@@ -144,7 +138,6 @@ class StorefrontController extends Controller
             'categories' => $categories,
             'filters' => [
                 'search' => $request->search,
-                'category' => $request->category,
             ],
         ]);
     }

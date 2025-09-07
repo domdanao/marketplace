@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Merchant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Merchant\StoreProductRequest;
 use App\Http\Requests\Merchant\UpdateProductRequest;
+use App\Http\Requests\Merchant\UploadDigitalFilesRequest;
+use App\Http\Requests\Merchant\UploadProductImagesRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\FileUploadService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class ProductController extends Controller
 {
+    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
     public function index(Request $request)
     {
         $store = $request->user()->store;
@@ -23,8 +28,8 @@ class ProductController extends Controller
         $products = Product::where('store_id', $store->id)
             ->with(['category'])
             ->when($request->search, function ($query, $search) {
-                $query->where('name', 'ilike', "%{$search}%")
-                    ->orWhere('description', 'ilike', "%{$search}%");
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
@@ -81,9 +86,9 @@ class ProductController extends Controller
             'slug' => str($request->name)->slug(),
             'description' => $request->description,
             'price' => $request->price,
-            'quantity' => $request->quantity,
+            'quantity' => $request->boolean('digital_product', false) ? 0 : $request->quantity,
             'digital_product' => $request->boolean('digital_product', false),
-            'download_url' => $request->digital_product ? $request->download_url : null,
+            'download_url' => $request->boolean('digital_product', false) ? $request->download_url : null,
             'status' => 'draft',
         ]);
 
@@ -122,9 +127,9 @@ class ProductController extends Controller
             'slug' => str($request->name)->slug(),
             'description' => $request->description,
             'price' => $request->price,
-            'quantity' => $request->quantity,
+            'quantity' => $request->boolean('digital_product', false) ? 0 : $request->quantity,
             'digital_product' => $request->boolean('digital_product', false),
-            'download_url' => $request->digital_product ? $request->download_url : null,
+            'download_url' => $request->boolean('digital_product', false) ? $request->download_url : null,
         ]);
 
         return redirect()->route('merchant.products.show', $product)
@@ -157,5 +162,119 @@ class ProductController extends Controller
         $product->update(['status' => 'draft']);
 
         return back()->with('success', 'Product unpublished successfully.');
+    }
+
+    public function uploadImages(UploadProductImagesRequest $request, FileUploadService $fileUploadService)
+    {
+        $store = $request->user()->store;
+
+        try {
+            $uploadedImages = $fileUploadService->uploadProductImages(
+                $request->file('images'),
+                $store->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Images uploaded successfully.',
+                'images' => $uploadedImages,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload images: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function uploadDigitalFiles(UploadDigitalFilesRequest $request, FileUploadService $fileUploadService)
+    {
+        $store = $request->user()->store;
+
+        try {
+            $uploadedFiles = $fileUploadService->uploadDigitalFiles(
+                $request->file('files'),
+                $store->id
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Digital files uploaded successfully.',
+                'files' => $uploadedFiles,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to upload files: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteImage(Request $request, FileUploadService $fileUploadService)
+    {
+        $request->validate([
+            'image_url' => 'required|string',
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+        $this->authorize('update', $product);
+
+        try {
+            // Remove image from product's images array
+            $images = $product->images ?? [];
+            $updatedImages = array_filter($images, function ($image) use ($request) {
+                return $image !== $request->image_url;
+            });
+
+            $product->update(['images' => array_values($updatedImages)]);
+
+            // Delete the actual file
+            $fileUploadService->deleteProductImage($request->image_url);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete image: '.$e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function deleteDigitalFile(Request $request, FileUploadService $fileUploadService)
+    {
+        $request->validate([
+            'file_path' => 'required|string',
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+        $this->authorize('update', $product);
+
+        try {
+            // Remove file from product's digital_files array
+            $files = $product->digital_files ?? [];
+            $updatedFiles = array_filter($files, function ($file) use ($request) {
+                return $file['path'] !== $request->file_path;
+            });
+
+            $product->update(['digital_files' => array_values($updatedFiles)]);
+
+            // Delete the actual file
+            $fileUploadService->deleteDigitalFile($request->file_path);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Digital file deleted successfully.',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete file: '.$e->getMessage(),
+            ], 500);
+        }
     }
 }

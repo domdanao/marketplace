@@ -29,7 +29,7 @@ class CartController extends Controller
     public function add(Request $request, Product $product)
     {
         $request->validate([
-            'quantity' => ['required', 'integer', 'min:1', 'max:'.$product->quantity],
+            'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         if (! $product->isPublished()) {
@@ -68,7 +68,7 @@ class CartController extends Controller
         $this->authorize('update', $cart);
 
         $request->validate([
-            'quantity' => ['required', 'integer', 'min:1', 'max:'.$cart->product->quantity],
+            'quantity' => ['required', 'integer', 'min:1'],
         ]);
 
         if (! $cart->product->digital_product && $request->quantity > $cart->product->quantity) {

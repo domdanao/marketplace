@@ -207,7 +207,7 @@ it('allows merchant to edit their own product', function () {
         ->assertInertia(fn ($page) => $page
             ->component('Merchant/Products/Edit')
             ->has('product')
-            ->has('categories', 3)
+            ->has('categories', 4)
         );
 });
 

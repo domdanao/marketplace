@@ -33,6 +33,13 @@ class UserFactory extends Factory
         ];
     }
 
+    public function buyer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'buyer',
+        ]);
+    }
+
     public function merchant(): static
     {
         return $this->state(fn (array $attributes) => [

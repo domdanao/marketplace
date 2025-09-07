@@ -224,8 +224,8 @@ describe('Product Analytics', function () {
 
 describe('Customer Analytics', function () {
     it('identifies top customers by spending', function () {
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
+        $startDate = Carbon::now()->subDays(15);
+        $endDate = Carbon::now();
 
         // Buyer 1: 2 orders, ₱500 total
         $order1 = Order::factory()->create([
@@ -278,8 +278,8 @@ describe('Customer Analytics', function () {
     });
 
     it('counts repeat customers correctly', function () {
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
+        $startDate = Carbon::now()->subDays(15);
+        $endDate = Carbon::now();
 
         // Create customer with multiple orders
         $order1 = Order::factory()->create([

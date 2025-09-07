@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Product extends Model
@@ -19,6 +19,8 @@ class Product extends Model
         'description',
         'price',
         'quantity',
+        'digital_product',
+        'download_url',
         'images',
         'digital_files',
         'status',
@@ -28,11 +30,20 @@ class Product extends Model
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price' => 'integer',
+            'digital_product' => 'boolean',
             'images' => 'array',
             'digital_files' => 'array',
             'metadata' => 'array',
         ];
+    }
+
+    protected function price(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: fn ($value) => $value / 100,
+            set: fn ($value) => $value * 100,
+        );
     }
 
     protected static function boot()
@@ -83,12 +94,17 @@ class Product extends Model
 
     public function isDigital(): bool
     {
-        return !empty($this->digital_files);
+        return ! empty($this->digital_files);
     }
 
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('status', 'draft');
     }
 
     public function scopeInStock($query)

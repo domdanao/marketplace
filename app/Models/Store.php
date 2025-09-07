@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Store extends Model
@@ -16,6 +16,10 @@ class Store extends Model
         'name',
         'slug',
         'description',
+        'category_id',
+        'contact_email',
+        'contact_phone',
+        'address',
         'logo',
         'banner',
         'status',
@@ -45,6 +49,11 @@ class Store extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     public function products()
     {
         return $this->hasMany(Product::class);
@@ -68,5 +77,20 @@ class Store extends Model
     public function isSuspended(): bool
     {
         return $this->status === 'suspended';
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeSuspended($query)
+    {
+        return $query->where('status', 'suspended');
     }
 }

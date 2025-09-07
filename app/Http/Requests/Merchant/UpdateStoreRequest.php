@@ -11,15 +11,16 @@ class UpdateStoreRequest extends FormRequest
     {
         $user = $this->user();
 
-        return $user && $user->isMerchant() && $user->store;
+        return $user && $user->isMerchant();
     }
 
     public function rules(): array
     {
-        $storeId = $this->user()->store->id;
+        $store = $this->user()->store;
+        $storeId = $store ? $store->id : null;
 
         return [
-            'name' => ['required', 'string', 'max:255', Rule::unique('stores', 'name')->ignore($storeId)],
+            'name' => ['required', 'string', 'max:255', $storeId ? Rule::unique('stores', 'name')->ignore($storeId) : Rule::unique('stores', 'name')],
             'description' => ['required', 'string', 'min:10', 'max:2000'],
             'category_id' => ['required', 'exists:categories,id'],
             'contact_email' => ['required', 'email', 'max:255'],

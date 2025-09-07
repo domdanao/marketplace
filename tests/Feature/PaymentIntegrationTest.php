@@ -301,10 +301,7 @@ describe('Webhook Handling', function () {
             ],
         ]);
 
-        $response = $this->post(route('webhooks.magpie'), [], [
-            'Content-Type' => 'application/json',
-        ]);
-        $response->withBody($payload);
+        $response = $this->postJson(route('webhooks.magpie'), json_decode($payload, true));
 
         $response->assertOk();
 
@@ -325,10 +322,7 @@ describe('Webhook Handling', function () {
             ],
         ]);
 
-        $response = $this->post(route('webhooks.magpie'), [], [
-            'Content-Type' => 'application/json',
-        ]);
-        $response->withBody($payload);
+        $response = $this->postJson(route('webhooks.magpie'), json_decode($payload, true));
 
         $response->assertOk();
 
@@ -344,8 +338,9 @@ describe('Webhook Handling', function () {
         $orderItem = $this->order->orderItems()->create([
             'product_id' => $this->product->id,
             'store_id' => $this->store->id,
+            'product_name' => $this->product->name,
+            'product_price' => $this->product->price,
             'quantity' => 2,
-            'unit_price' => $this->product->price,
             'total_price' => $this->product->price * 2,
         ]);
 
@@ -361,10 +356,7 @@ describe('Webhook Handling', function () {
             ],
         ]);
 
-        $response = $this->post(route('webhooks.magpie'), [], [
-            'Content-Type' => 'application/json',
-        ]);
-        $response->withBody($payload);
+        $response = $this->postJson(route('webhooks.magpie'), json_decode($payload, true));
 
         $response->assertOk();
 
@@ -378,10 +370,7 @@ describe('Webhook Handling', function () {
     });
 
     it('handles invalid webhook payload gracefully', function () {
-        $response = $this->post(route('webhooks.magpie'), [], [
-            'Content-Type' => 'application/json',
-        ]);
-        $response->withBody('invalid json');
+        $response = $this->postJson(route('webhooks.magpie'), ['invalid' => 'json']);
 
         $response->assertStatus(400);
     });
@@ -392,10 +381,7 @@ describe('Webhook Handling', function () {
             'data' => ['id' => 'test123'],
         ]);
 
-        $response = $this->post(route('webhooks.magpie'), [], [
-            'Content-Type' => 'application/json',
-        ]);
-        $response->withBody($payload);
+        $response = $this->postJson(route('webhooks.magpie'), json_decode($payload, true));
 
         $response->assertOk(); // Should still return 200 for unknown events
     });

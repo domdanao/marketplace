@@ -53,9 +53,59 @@ class DashboardController extends Controller
         // Get basic store stats for quick overview
         $basicStats = $this->getBasicStats($store);
 
+        // Get recent orders for the store
+        $recentOrders = \App\Models\Order::whereHas('orderItems', function ($query) use ($store) {
+            $query->where('store_id', $store->id);
+        })
+            ->with(['user', 'orderItems' => function ($query) use ($store) {
+                $query->where('store_id', $store->id);
+            }])
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($order) {
+                $storeItems = $order->orderItems;
+
+                return [
+                    'id' => $order->id,
+                    'order_number' => $order->order_number,
+                    'user' => $order->user ? ['name' => $order->user->name] : null,
+                    'total_amount' => $storeItems->sum('total_price') / 100, // Convert from cents
+                    'status' => $order->status,
+                    'created_at' => $order->created_at,
+                ];
+            });
+
+        // Get low stock products
+        $lowStockProducts = Product::where('store_id', $store->id)
+            ->where('quantity', '<=', 5)
+            ->where('quantity', '>', 0)
+            ->where('digital_product', false)
+            ->published()
+            ->take(5)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'quantity' => $product->quantity,
+                ];
+            });
+
+        // Combine stats into the expected structure
+        $stats = [
+            'recent_orders' => $recentOrders,
+            'total_products' => $basicStats['total_products'],
+            'published_products' => $basicStats['published_products'],
+            'total_orders' => $analytics['overview']['total_orders']['current'] ?? 0,
+            'total_revenue' => $analytics['overview']['total_revenue']['current'] ?? 0,
+            'low_stock_products' => $lowStockProducts,
+        ];
+
         return Inertia::render('Merchant/Dashboard', [
             'user' => $user,
             'store' => $store,
+            'stats' => $stats,
             'analytics' => $analytics,
             'basicStats' => $basicStats,
             'dateRange' => [
