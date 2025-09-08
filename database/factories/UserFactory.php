@@ -44,7 +44,10 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'role' => 'merchant',
-        ]);
+        ])->afterCreating(function ($user) {
+            // Automatically create an approved merchant profile for testing
+            \App\Models\Merchant::factory()->forUser($user)->create();
+        });
     }
 
     public function admin(): static

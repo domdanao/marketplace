@@ -12,6 +12,7 @@ export default function AdminLayout({ children, header }: AdminLayoutProps) {
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: '📊' },
         { name: 'Users', href: '/admin/users', icon: '👥' },
+        { name: 'Merchants', href: '/admin/merchants', icon: '🏬' },
         { name: 'Stores', href: '/admin/stores', icon: '🏪' },
         { name: 'Orders', href: '/admin/orders', icon: '📦' },
         { name: 'Payments', href: '/admin/payments', icon: '💳' },

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Category;
+use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -303,6 +304,236 @@ describe('Admin Analytics', function () {
     });
 });
 
+describe('Admin Merchant Creation', function () {
+    it('shows merchant creation form to admin users', function () {
+        $response = $this->actingAs($this->admin)
+            ->get('/admin/merchants/create');
+
+        $response->assertSuccessful()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Merchants/Create')
+            );
+    });
+
+    it('prevents non-admin users from accessing merchant creation form', function () {
+        $this->actingAs($this->merchant)
+            ->get('/admin/merchants/create')
+            ->assertForbidden();
+
+        $this->actingAs($this->buyer)
+            ->get('/admin/merchants/create')
+            ->assertForbidden();
+    });
+
+    it('allows admin to create merchant account with user profile', function () {
+        $merchantData = [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Johns Electronics',
+            'business_type' => 'llc',
+            'phone' => '+1234567890',
+            'business_address' => '123 Business St, City, State 12345',
+            'tax_id' => 'TAX123456',
+            'bank_name' => 'First National Bank',
+            'account_holder_name' => 'John Doe',
+            'account_number' => '1234567890',
+            'routing_number' => '021000021',
+            'status' => 'approved',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        // Check user was created
+        $user = User::where('email', 'john@example.com')->first();
+        expect($user)->not->toBeNull();
+        expect($user->role)->toBe('merchant');
+        expect($user->email_verified_at)->not->toBeNull();
+
+        // Check merchant profile was created
+        $merchant = Merchant::where('user_id', $user->id)->first();
+        expect($merchant)->not->toBeNull();
+        expect($merchant->business_name)->toBe('Johns Electronics');
+        expect($merchant->business_type)->toBe('llc');
+        expect($merchant->status)->toBe('approved');
+        expect($merchant->approved_at)->not->toBeNull();
+        expect($merchant->approved_by)->toBe($this->admin->id);
+
+        $response->assertRedirect()
+            ->assertSessionHas('success', 'Merchant account created successfully.');
+    });
+
+    it('creates merchant with pending status when specified', function () {
+        $merchantData = [
+            'name' => 'Jane Smith',
+            'email' => 'jane@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Janes Books',
+            'business_type' => 'sole_proprietorship',
+            'phone' => '+1987654321',
+            'business_address' => '456 Store Ave, City, State 67890',
+            'status' => 'pending',
+        ];
+
+        $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $user = User::where('email', 'jane@example.com')->first();
+        $merchant = Merchant::where('user_id', $user->id)->first();
+
+        expect($merchant->status)->toBe('pending');
+        expect($merchant->approved_at)->toBeNull();
+        expect($merchant->approved_by)->toBeNull();
+    });
+
+    it('validates required fields when creating merchant', function () {
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', []);
+
+        $response->assertSessionHasErrors([
+            'name',
+            'email',
+            'password',
+            'business_name',
+            'business_type',
+            'phone',
+            'business_address',
+            'status',
+        ]);
+    });
+
+    it('validates email uniqueness when creating merchant', function () {
+        $existingUser = User::factory()->create(['email' => 'existing@example.com']);
+
+        $merchantData = [
+            'name' => 'Test User',
+            'email' => 'existing@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Test Business',
+            'business_type' => 'llc',
+            'phone' => '+1234567890',
+            'business_address' => '123 Test St',
+            'status' => 'pending',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $response->assertSessionHasErrors(['email']);
+    });
+
+    it('validates password confirmation when creating merchant', function () {
+        $merchantData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'different_password',
+            'business_name' => 'Test Business',
+            'business_type' => 'llc',
+            'phone' => '+1234567890',
+            'business_address' => '123 Test St',
+            'status' => 'pending',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $response->assertSessionHasErrors(['password']);
+    });
+
+    it('validates business type enum values', function () {
+        $merchantData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Test Business',
+            'business_type' => 'invalid_type',
+            'phone' => '+1234567890',
+            'business_address' => '123 Test St',
+            'status' => 'pending',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $response->assertSessionHasErrors(['business_type']);
+    });
+
+    it('validates status enum values', function () {
+        $merchantData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Test Business',
+            'business_type' => 'llc',
+            'phone' => '+1234567890',
+            'business_address' => '123 Test St',
+            'status' => 'invalid_status',
+        ];
+
+        $response = $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $response->assertSessionHasErrors(['status']);
+    });
+
+    it('creates merchant without banking information when not provided', function () {
+        $merchantData = [
+            'name' => 'Basic Merchant',
+            'email' => 'basic@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Basic Business',
+            'business_type' => 'sole_proprietorship',
+            'phone' => '+1111111111',
+            'business_address' => '789 Basic St',
+            'status' => 'pending',
+        ];
+
+        $this->actingAs($this->admin)
+            ->post('/admin/merchants', $merchantData);
+
+        $user = User::where('email', 'basic@example.com')->first();
+        $merchant = Merchant::where('user_id', $user->id)->first();
+
+        expect($merchant->bank_name)->toBeNull();
+        expect($merchant->account_holder_name)->toBeNull();
+        expect($merchant->account_number)->toBeNull();
+        expect($merchant->routing_number)->toBeNull();
+    });
+
+    it('prevents non-admin users from creating merchants', function () {
+        $merchantData = [
+            'name' => 'Unauthorized User',
+            'email' => 'unauthorized@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'business_name' => 'Unauthorized Business',
+            'business_type' => 'llc',
+            'phone' => '+1234567890',
+            'business_address' => '123 Unauthorized St',
+            'status' => 'pending',
+        ];
+
+        $this->actingAs($this->merchant)
+            ->post('/admin/merchants', $merchantData)
+            ->assertForbidden();
+
+        $this->actingAs($this->buyer)
+            ->post('/admin/merchants', $merchantData)
+            ->assertForbidden();
+
+        // Ensure no merchant was created
+        expect(User::where('email', 'unauthorized@example.com')->exists())->toBeFalse();
+    });
+});
+
 describe('Admin Authorization', function () {
     it('prevents non-admin users from accessing admin routes', function ($route) {
         $this->actingAs($this->merchant)
@@ -315,6 +546,8 @@ describe('Admin Authorization', function () {
     })->with([
         '/admin/dashboard',
         '/admin/users',
+        '/admin/merchants',
+        '/admin/merchants/create',
         '/admin/stores',
         '/admin/orders',
         '/admin/payments',

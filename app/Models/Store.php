@@ -13,6 +13,7 @@ class Store extends Model
 
     protected $fillable = [
         'user_id',
+        'merchant_id',
         'name',
         'slug',
         'description',
@@ -47,6 +48,11 @@ class Store extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function merchant()
+    {
+        return $this->belongsTo(Merchant::class);
     }
 
     public function category()

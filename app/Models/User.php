@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'email_verified_at',
     ];
 
     /**
@@ -46,6 +47,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function merchant()
+    {
+        return $this->hasOne(Merchant::class);
     }
 
     public function store()
@@ -86,5 +92,20 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
+    }
+
+    public function hasApprovedMerchant(): bool
+    {
+        return $this->merchant && $this->merchant->isApproved();
+    }
+
+    public function hasPendingMerchant(): bool
+    {
+        return $this->merchant && $this->merchant->isPending();
+    }
+
+    public function hasSuspendedMerchant(): bool
+    {
+        return $this->merchant && $this->merchant->isSuspended();
     }
 }

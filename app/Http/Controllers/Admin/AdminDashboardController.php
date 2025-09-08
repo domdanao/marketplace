@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Merchant;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -51,6 +52,226 @@ class AdminDashboardController extends Controller
             'users' => $users,
             'filters' => $request->only(['role', 'search']),
         ]);
+    }
+
+    public function showUser(User $user)
+    {
+        $user->load(['orders.orderItems.product', 'store.products', 'merchant']);
+
+        $userStats = [
+            'total_orders' => $user->orders->count(),
+            'total_spent' => $user->orders->where('status', 'completed')->sum('total'),
+            'pending_orders' => $user->orders->where('status', 'pending')->count(),
+            'completed_orders' => $user->orders->where('status', 'completed')->count(),
+            'cancelled_orders' => $user->orders->where('status', 'cancelled')->count(),
+        ];
+
+        // If user is a merchant, get store stats
+        $storeStats = null;
+        if ($user->isMerchant() && $user->store) {
+            $storeStats = [
+                'total_products' => $user->store->products->count(),
+                'published_products' => $user->store->products->where('status', 'published')->count(),
+                'total_sales' => $user->store->products->sum(function ($product) {
+                    return $product->orderItems->where('order.status', 'completed')->sum('total_price');
+                }),
+                'orders_received' => $user->store->products->sum(function ($product) {
+                    return $product->orderItems->count();
+                }),
+            ];
+        }
+
+        return Inertia::render('Admin/Users/Show', [
+            'user' => $user,
+            'userStats' => $userStats,
+            'storeStats' => $storeStats,
+        ]);
+    }
+
+    public function createMerchant(User $user, Request $request)
+    {
+        $request->validate([
+            'business_name' => 'required|string|max:255',
+            'business_type' => 'nullable|string|max:100',
+            'phone' => 'nullable|string|max:20',
+        ]);
+
+        // Update user role if not already merchant
+        if (! $user->isMerchant()) {
+            $user->update(['role' => 'merchant']);
+        }
+
+        // Create merchant profile
+        $merchant = $user->merchant()->create([
+            'business_name' => $request->business_name,
+            'business_type' => $request->business_type,
+            'phone' => $request->phone,
+            'status' => 'approved', // Admin-created merchants are auto-approved
+            'approved_at' => now(),
+            'approved_by' => auth()->id(),
+        ]);
+
+        return back()->with('success', 'Merchant profile created successfully.');
+    }
+
+    public function merchants(Request $request)
+    {
+        $query = Merchant::with(['user', 'store']);
+
+        // Filter by status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Search by business name or user details
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('business_name', 'like', "%{$request->search}%")
+                    ->orWhereHas('user', function ($userQuery) use ($request) {
+                        $userQuery->where('name', 'like', "%{$request->search}%")
+                            ->orWhere('email', 'like', "%{$request->search}%");
+                    });
+            });
+        }
+
+        $merchants = $query->latest()
+            ->paginate(20);
+
+        return Inertia::render('Admin/Merchants/Index', [
+            'merchants' => $merchants,
+            'filters' => $request->only(['status', 'search']),
+        ]);
+    }
+
+    public function showMerchant(Merchant $merchant)
+    {
+        $merchant->load(['user', 'store.products', 'approvedBy']);
+
+        $merchantStats = [
+            'total_products' => $merchant->store ? $merchant->store->products->count() : 0,
+            'published_products' => $merchant->store ? $merchant->store->products->where('status', 'published')->count() : 0,
+            'total_sales' => $merchant->store ? $merchant->store->orderItems->where('order.status', 'completed')->sum('total_price') : 0,
+            'orders_received' => $merchant->store ? $merchant->store->orderItems->count() : 0,
+        ];
+
+        return Inertia::render('Admin/Merchants/Show', [
+            'merchant' => $merchant,
+            'merchantStats' => $merchantStats,
+        ]);
+    }
+
+    public function approveMerchant(Merchant $merchant)
+    {
+        $merchant->approve(auth()->user());
+
+        return back()->with('success', 'Merchant approved successfully.');
+    }
+
+    public function suspendMerchant(Merchant $merchant, Request $request)
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:1000',
+        ]);
+
+        $merchant->suspend($request->reason);
+
+        return back()->with('success', 'Merchant suspended successfully.');
+    }
+
+    public function rejectMerchant(Merchant $merchant, Request $request)
+    {
+        $request->validate([
+            'reason' => 'required|string|max:1000',
+        ]);
+
+        $merchant->reject($request->reason);
+
+        return back()->with('success', 'Merchant rejected successfully.');
+    }
+
+    public function reactivateMerchant(Merchant $merchant)
+    {
+        $merchant->reactivate();
+
+        return back()->with('success', 'Merchant reactivated successfully.');
+    }
+
+    public function createMerchantForm()
+    {
+        return Inertia::render('Admin/Merchants/Create');
+    }
+
+    public function storeMerchant(Request $request)
+    {
+        $request->validate([
+            // User information
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+
+            // Merchant business information
+            'business_name' => 'required|string|max:255',
+            'business_type' => 'required|string|in:sole_proprietorship,partnership,llc,corporation,other',
+            'phone' => 'required|string|max:20',
+            'business_address' => 'required|string|max:500',
+            'tax_id' => 'nullable|string|max:50',
+
+            // Banking information (optional)
+            'bank_name' => 'nullable|string|max:255',
+            'account_holder_name' => 'nullable|string|max:255',
+            'account_number' => 'nullable|string|max:255',
+            'routing_number' => 'nullable|string|max:255',
+
+            // Status
+            'status' => 'required|string|in:pending,approved,suspended,rejected',
+        ]);
+
+        try {
+            // Create user account
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'role' => 'merchant',
+                'email_verified_at' => now(), // Admin-created accounts are auto-verified
+            ]);
+
+            // Create merchant profile
+            $merchantData = [
+                'user_id' => $user->id,
+                'business_name' => $request->business_name,
+                'business_type' => $request->business_type,
+                'phone' => $request->phone,
+                'business_address' => $request->business_address,
+                'tax_id' => $request->tax_id,
+                'status' => $request->status,
+            ];
+
+            // Add banking information if provided
+            if ($request->filled('bank_name')) {
+                $merchantData['bank_name'] = $request->bank_name;
+                $merchantData['account_holder_name'] = $request->account_holder_name;
+                $merchantData['account_number'] = $request->account_number;
+                $merchantData['routing_number'] = $request->routing_number;
+            }
+
+            // Set approval fields if status is approved
+            if ($request->status === 'approved') {
+                $merchantData['approved_at'] = now();
+                $merchantData['approved_by'] = auth()->id();
+            }
+
+            $merchant = Merchant::create($merchantData);
+
+            return redirect()
+                ->route('admin.merchants.show', $merchant)
+                ->with('success', 'Merchant account created successfully.');
+
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create merchant account: '.$e->getMessage());
+        }
     }
 
     public function stores(Request $request)

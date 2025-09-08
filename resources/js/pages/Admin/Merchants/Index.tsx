@@ -3,8 +3,20 @@ import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { User } from '@/types';
 
-interface PaginatedUsers {
-    data: User[];
+interface Merchant {
+    id: string;
+    business_name: string;
+    business_type?: string;
+    phone?: string;
+    status: 'pending' | 'approved' | 'suspended' | 'rejected';
+    created_at: string;
+    approved_at?: string;
+    user: User;
+    store?: any;
+}
+
+interface PaginatedMerchants {
+    data: Merchant[];
     current_page: number;
     last_page: number;
     per_page: number;
@@ -13,37 +25,43 @@ interface PaginatedUsers {
 }
 
 interface Props {
-    users: PaginatedUsers;
+    merchants: PaginatedMerchants;
     filters: {
-        role?: string;
+        status?: string;
         search?: string;
     };
 }
 
-export default function UsersIndex({ users, filters }: Props) {
+export default function MerchantsIndex({ merchants, filters }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-    const [role, setRole] = useState(filters.role || '');
+    const [status, setStatus] = useState(filters.status || '');
 
     const handleSearch = () => {
-        router.get('/admin/users', {
+        router.get('/admin/merchants', {
             search: search,
-            role: role,
+            status: status,
         });
     };
 
     const handleReset = () => {
         setSearch('');
-        setRole('');
-        router.get('/admin/users');
+        setStatus('');
+        router.get('/admin/merchants');
     };
 
-    const getRoleBadge = (userRole: string) => {
+    const getStatusBadge = (merchantStatus: string) => {
         const colors = {
-            admin: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300',
-            merchant: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
-            buyer: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300',
+            approved: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+            suspended: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300',
+            rejected: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300',
         };
-        return colors[userRole as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+        return colors[merchantStatus as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    };
+
+    const handleStatusAction = (merchant: Merchant, action: string, reason?: string) => {
+        const data = reason ? { reason } : {};
+        router.patch(`/admin/merchants/${merchant.id}/${action}`, data);
     };
 
     return (
@@ -52,24 +70,22 @@ export default function UsersIndex({ users, filters }: Props) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            User Management
+                            Merchant Management
                         </h2>
                         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Manage all platform users
+                            Manage merchant accounts and approvals
                         </p>
                     </div>
-                    <div className="flex space-x-3">
-                        <Link
-                            href="/admin/merchants"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                        >
-                            View All Merchants
-                        </Link>
-                    </div>
+                    <Link
+                        href="/admin/merchants/create"
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Create Merchant
+                    </Link>
                 </div>
             }
         >
-            <Head title="Users - Admin" />
+            <Head title="Merchants - Admin" />
 
             <div className="space-y-6">
                 {/* Filters */}
@@ -83,24 +99,25 @@ export default function UsersIndex({ users, filters }: Props) {
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                placeholder="Search by name or email..."
+                                placeholder="Search by business name or owner..."
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Role
+                                Status
                             </label>
                             <select
-                                value={role}
-                                onChange={(e) => setRole(e.target.value)}
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
                                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             >
-                                <option value="">All Roles</option>
-                                <option value="admin">Admin</option>
-                                <option value="merchant">Merchant</option>
-                                <option value="buyer">Buyer</option>
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="suspended">Suspended</option>
+                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
                         <div className="flex items-end space-x-2">
@@ -120,7 +137,26 @@ export default function UsersIndex({ users, filters }: Props) {
                     </div>
                 </div>
 
-                {/* Users Table */}
+                {/* Stats */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {['pending', 'approved', 'suspended', 'rejected'].map((statusType) => {
+                        const count = merchants.data.filter(m => m.status === statusType).length;
+                        return (
+                            <div key={statusType} className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                                        {count}
+                                    </p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                                        {statusType}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Merchants Table */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
                     <div className="px-4 py-5 sm:p-6">
                         <div className="overflow-x-auto">
@@ -128,19 +164,19 @@ export default function UsersIndex({ users, filters }: Props) {
                                 <thead className="bg-gray-50 dark:bg-gray-700">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            User
+                                            Business
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Role
+                                            Owner
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Orders
+                                            Status
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Store
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                            Joined
+                                            Applied
                                         </th>
                                         <th className="relative px-6 py-3">
                                             <span className="sr-only">Actions</span>
@@ -148,46 +184,88 @@ export default function UsersIndex({ users, filters }: Props) {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                    {users.data.map((user) => (
-                                        <tr key={user.id}>
+                                    {merchants.data.map((merchant) => (
+                                        <tr key={merchant.id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div>
                                                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {user.name}
+                                                        {merchant.business_name}
+                                                    </div>
+                                                    {merchant.business_type && (
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                            {merchant.business_type}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div>
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {merchant.user.name}
                                                     </div>
                                                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                        {user.email}
+                                                        {merchant.user.email}
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadge(user.role)}`}>
-                                                    {user.role}
+                                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(merchant.status)}`}>
+                                                    {merchant.status}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                {user.orders_count || 0}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                                                {user.store_count > 0 ? 'Yes' : 'No'}
+                                                {merchant.store ? 'Yes' : 'No'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                                {new Date(user.created_at).toLocaleDateString()}
+                                                {new Date(merchant.created_at).toLocaleDateString()}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                                 <Link
-                                                    href={`/admin/users/${user.id}`}
+                                                    href={`/admin/merchants/${merchant.id}`}
                                                     className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                                 >
                                                     View
                                                 </Link>
-                                                {user.role !== 'merchant' && (
-                                                    <Link
-                                                        href={`/admin/users/${user.id}`}
-                                                        className="inline-flex items-center px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                                
+                                                {merchant.status === 'pending' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusAction(merchant, 'approve')}
+                                                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                const reason = prompt('Reason for rejection:');
+                                                                if (reason) handleStatusAction(merchant, 'reject', reason);
+                                                            }}
+                                                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
+                                                
+                                                {merchant.status === 'approved' && (
+                                                    <button
+                                                        onClick={() => {
+                                                            const reason = prompt('Reason for suspension (optional):');
+                                                            handleStatusAction(merchant, 'suspend', reason || undefined);
+                                                        }}
+                                                        className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                                                     >
-                                                        Make Merchant
-                                                    </Link>
+                                                        Suspend
+                                                    </button>
+                                                )}
+                                                
+                                                {(merchant.status === 'suspended' || merchant.status === 'rejected') && (
+                                                    <button
+                                                        onClick={() => handleStatusAction(merchant, 'reactivate')}
+                                                        className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                    >
+                                                        Reactivate
+                                                    </button>
                                                 )}
                                             </td>
                                         </tr>
@@ -198,20 +276,20 @@ export default function UsersIndex({ users, filters }: Props) {
                     </div>
 
                     {/* Pagination */}
-                    {users.last_page > 1 && (
+                    {merchants.last_page > 1 && (
                         <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
                             <div className="flex-1 flex justify-between sm:hidden">
-                                {users.links[0].url && (
+                                {merchants.links[0].url && (
                                     <Link
-                                        href={users.links[0].url}
+                                        href={merchants.links[0].url || '#'}
                                         className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                     >
                                         Previous
                                     </Link>
                                 )}
-                                {users.links[users.links.length - 1].url && (
+                                {merchants.links[merchants.links.length - 1].url && (
                                     <Link
-                                        href={users.links[users.links.length - 1].url}
+                                        href={merchants.links[merchants.links.length - 1].url || '#'}
                                         className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                     >
                                         Next
@@ -223,18 +301,18 @@ export default function UsersIndex({ users, filters }: Props) {
                                     <p className="text-sm text-gray-700 dark:text-gray-300">
                                         Showing{' '}
                                         <span className="font-medium">
-                                            {(users.current_page - 1) * users.per_page + 1}
+                                            {(merchants.current_page - 1) * merchants.per_page + 1}
                                         </span>{' '}
                                         to{' '}
                                         <span className="font-medium">
-                                            {Math.min(users.current_page * users.per_page, users.total)}
+                                            {Math.min(merchants.current_page * merchants.per_page, merchants.total)}
                                         </span>{' '}
-                                        of <span className="font-medium">{users.total}</span> results
+                                        of <span className="font-medium">{merchants.total}</span> results
                                     </p>
                                 </div>
                                 <div>
                                     <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                                        {users.links.map((link, index) => (
+                                        {merchants.links.map((link, index) => (
                                             <Link
                                                 key={index}
                                                 href={link.url || '#'}

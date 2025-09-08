@@ -110,6 +110,18 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     // User management
     Route::get('/users', [App\Http\Controllers\Admin\AdminDashboardController::class, 'users'])->name('users');
+    Route::get('/users/{user}', [App\Http\Controllers\Admin\AdminDashboardController::class, 'showUser'])->name('users.show');
+    Route::post('/users/{user}/make-merchant', [App\Http\Controllers\Admin\AdminDashboardController::class, 'createMerchant'])->name('users.make-merchant');
+
+    // Merchant management
+    Route::get('/merchants', [App\Http\Controllers\Admin\AdminDashboardController::class, 'merchants'])->name('merchants');
+    Route::get('/merchants/create', [App\Http\Controllers\Admin\AdminDashboardController::class, 'createMerchantForm'])->name('merchants.create');
+    Route::get('/merchants/{merchant}', [App\Http\Controllers\Admin\AdminDashboardController::class, 'showMerchant'])->name('merchants.show');
+    Route::post('/merchants', [App\Http\Controllers\Admin\AdminDashboardController::class, 'storeMerchant'])->name('merchants.store');
+    Route::patch('/merchants/{merchant}/approve', [App\Http\Controllers\Admin\AdminDashboardController::class, 'approveMerchant'])->name('merchants.approve');
+    Route::patch('/merchants/{merchant}/suspend', [App\Http\Controllers\Admin\AdminDashboardController::class, 'suspendMerchant'])->name('merchants.suspend');
+    Route::patch('/merchants/{merchant}/reject', [App\Http\Controllers\Admin\AdminDashboardController::class, 'rejectMerchant'])->name('merchants.reject');
+    Route::patch('/merchants/{merchant}/reactivate', [App\Http\Controllers\Admin\AdminDashboardController::class, 'reactivateMerchant'])->name('merchants.reactivate');
 
     // Store management
     Route::get('/stores', [App\Http\Controllers\Admin\AdminDashboardController::class, 'stores'])->name('stores');
@@ -143,8 +155,8 @@ Route::middleware('auth')->group(function () {
         ->where(['productId' => '[0-9a-f-]{36}', 'filename' => '.*']);
 });
 
-// Documentation/Markdown viewer routes (accessible to all authenticated users)
-Route::middleware('auth')->prefix('docs')->name('docs.')->group(function () {
+// Documentation/Markdown viewer routes (public access)
+Route::prefix('docs')->name('docs.')->group(function () {
     Route::get('/', [App\Http\Controllers\MarkdownController::class, 'index'])->name('index');
     Route::get('/{filename}', [App\Http\Controllers\MarkdownController::class, 'show'])->name('show');
 });

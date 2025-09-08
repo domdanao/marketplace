@@ -24,13 +24,20 @@ class StoreController extends Controller
     {
         $user = $request->user();
 
-        if ($user->store) {
+        // Check if user has an approved merchant account
+        if (! $user->hasApprovedMerchant()) {
+            return redirect()->route('merchant.dashboard')
+                ->with('error', 'You need an approved merchant account to create a store.');
+        }
+
+        if ($user->merchant->store) {
             return redirect()->route('merchant.dashboard')
                 ->with('error', 'You already have a store.');
         }
 
         $store = Store::create([
             'user_id' => $user->id,
+            'merchant_id' => $user->merchant->id,
             'name' => $request->name,
             'slug' => str($request->name)->slug(),
             'description' => $request->description,
@@ -48,7 +55,14 @@ class StoreController extends Controller
     public function edit()
     {
         $user = auth()->user();
-        $store = $user->store;
+
+        // Check if user has an approved merchant account
+        if (! $user->hasApprovedMerchant()) {
+            return redirect()->route('merchant.dashboard')
+                ->with('error', 'You need an approved merchant account to manage a store.');
+        }
+
+        $store = $user->merchant->store;
 
         if (! $store) {
             return redirect()->route('merchant.store.create');
@@ -65,7 +79,14 @@ class StoreController extends Controller
     public function update(UpdateStoreRequest $request)
     {
         $user = $request->user();
-        $store = $user->store;
+
+        // Check if user has an approved merchant account
+        if (! $user->hasApprovedMerchant()) {
+            return redirect()->route('merchant.dashboard')
+                ->with('error', 'You need an approved merchant account to manage a store.');
+        }
+
+        $store = $user->merchant->store;
 
         if (! $store) {
             return redirect()->route('merchant.store.create');

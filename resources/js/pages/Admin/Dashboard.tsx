@@ -95,10 +95,10 @@ export default function AdminDashboard({ stats }: Props) {
                                             Total Users
                                         </dt>
                                         <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {stats.users.total.toLocaleString()}
+                                            {stats.users.total?.toLocaleString() ?? '0'}
                                         </dd>
                                         <dd className="text-sm text-gray-600 dark:text-gray-400">
-                                            {stats.users.merchants} merchants, {stats.users.buyers} buyers
+                                            {stats.users.merchants ?? 0} merchants, {stats.users.buyers ?? 0} buyers
                                         </dd>
                                     </dl>
                                 </div>
@@ -119,10 +119,10 @@ export default function AdminDashboard({ stats }: Props) {
                                             Active Stores
                                         </dt>
                                         <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {stats.stores.active.toLocaleString()}
+                                            {stats.stores.approved?.toLocaleString() ?? '0'}
                                         </dd>
                                         <dd className="text-sm text-gray-600 dark:text-gray-400">
-                                            {stats.stores.pending} pending approval
+                                            {stats.stores.pending ?? 0} pending approval
                                         </dd>
                                     </dl>
                                 </div>
@@ -143,10 +143,10 @@ export default function AdminDashboard({ stats }: Props) {
                                             Total Revenue
                                         </dt>
                                         <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {formatCurrency(stats.revenue.total)}
+                                            {formatCurrency(stats.revenue.total ?? 0)}
                                         </dd>
-                                        <dd className={`text-sm ${getGrowthColor(stats.revenue.growth_percentage)}`}>
-                                            {formatGrowth(stats.revenue.growth_percentage)} this month
+                                        <dd className={`text-sm ${getGrowthColor(stats.revenue.growth_percentage ?? 0)}`}>
+                                            {formatGrowth(stats.revenue.growth_percentage ?? 0)} this month
                                         </dd>
                                     </dl>
                                 </div>
@@ -167,10 +167,10 @@ export default function AdminDashboard({ stats }: Props) {
                                             Total Orders
                                         </dt>
                                         <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {stats.orders.total.toLocaleString()}
+                                            {stats.orders.total?.toLocaleString() ?? '0'}
                                         </dd>
-                                        <dd className={`text-sm ${getGrowthColor(stats.orders.growth_percentage)}`}>
-                                            {formatGrowth(stats.orders.growth_percentage)} this month
+                                        <dd className={`text-sm ${getGrowthColor(stats.orders.growth_percentage ?? 0)}`}>
+                                            {formatGrowth(stats.orders.growth_percentage ?? 0)} this month
                                         </dd>
                                     </dl>
                                 </div>
@@ -187,7 +187,7 @@ export default function AdminDashboard({ stats }: Props) {
                                 Recent Orders
                             </h3>
                             <div className="space-y-3">
-                                {stats.recent_activities.orders.map((order) => (
+                                {(stats.recent_activities?.orders ?? []).map((order) => (
                                     <div key={order.id} className="flex items-center justify-between">
                                         <div>
                                             <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -221,25 +221,25 @@ export default function AdminDashboard({ stats }: Props) {
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">Payment Success Rate</span>
                                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {stats.payments.success_rate}%
+                                        {stats.payments?.success_rate ?? 0}%
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">Published Products</span>
                                     <span className="text-sm font-medium text-gray-900 dark:text-white">
-                                        {stats.products.published.toLocaleString()}
+                                        {stats.products.published?.toLocaleString() ?? '0'}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">Low Stock Items</span>
                                     <span className="text-sm font-medium text-red-600">
-                                        {stats.products.low_stock}
+                                        {stats.products?.low_stock ?? 0}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <span className="text-sm text-gray-500 dark:text-gray-400">New Users This Month</span>
                                     <span className="text-sm font-medium text-green-600">
-                                        {stats.users.new_this_month}
+                                        {stats.users?.new_this_month ?? 0}
                                     </span>
                                 </div>
                             </div>

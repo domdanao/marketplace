@@ -21,7 +21,34 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $store = $user->store;
+
+        // Check if user has a merchant account
+        if (! $user->merchant) {
+            return Inertia::render('Merchant/NoMerchantAccount', [
+                'user' => $user,
+            ]);
+        }
+
+        // Check merchant account status
+        if ($user->merchant->isPending()) {
+            return Inertia::render('Merchant/MerchantUnderReview', [
+                'merchant' => $user->merchant,
+            ]);
+        }
+
+        if ($user->merchant->isSuspended()) {
+            return Inertia::render('Merchant/MerchantSuspended', [
+                'merchant' => $user->merchant,
+            ]);
+        }
+
+        if ($user->merchant->isRejected()) {
+            return Inertia::render('Merchant/MerchantRejected', [
+                'merchant' => $user->merchant,
+            ]);
+        }
+
+        $store = $user->merchant->store;
 
         // If merchant doesn't have a store yet, redirect to onboarding
         if (! $store) {
@@ -118,7 +145,12 @@ class DashboardController extends Controller
     public function getAnalytics(Request $request)
     {
         $user = $request->user();
-        $store = $user->store;
+
+        if (! $user->hasApprovedMerchant()) {
+            return response()->json(['error' => 'Merchant account not approved'], 403);
+        }
+
+        $store = $user->merchant->store;
 
         if (! $store) {
             return response()->json(['error' => 'Store not found'], 404);
