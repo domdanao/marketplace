@@ -28,13 +28,21 @@ export default function CategoriesIndex({ categories }: Props) {
     return (
         <AdminLayout
             header={
-                <div>
-                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                        Category Management
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Manage product categories for the marketplace
-                    </p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                            Category Management
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                            Manage product categories for the marketplace
+                        </p>
+                    </div>
+                    <Link
+                        href="/admin/categories/create"
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                        Create Category
+                    </Link>
                 </div>
             }
         >
@@ -130,7 +138,7 @@ export default function CategoriesIndex({ categories }: Props) {
                             <div className="flex-1 flex justify-between sm:hidden">
                                 {categories.links[0].url && (
                                     <Link
-                                        href={categories.links[0].url}
+                                        href={categories.links[0].url || '#'}
                                         className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                     >
                                         Previous
@@ -138,7 +146,7 @@ export default function CategoriesIndex({ categories }: Props) {
                                 )}
                                 {categories.links[categories.links.length - 1].url && (
                                     <Link
-                                        href={categories.links[categories.links.length - 1].url}
+                                        href={categories.links[categories.links.length - 1].url || '#'}
                                         className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
                                     >
                                         Next

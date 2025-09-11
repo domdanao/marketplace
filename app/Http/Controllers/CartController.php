@@ -22,7 +22,7 @@ class CartController extends Controller
             'cartItems' => $cartItems,
             'cartTotal' => $cartTotal,
             'cartCount' => $cartCount,
-            'formattedTotal' => '$'.number_format($cartTotal / 100, 2),
+            'formattedTotal' => '₱'.number_format($cartTotal / 100, 2),
         ]);
     }
 
@@ -60,7 +60,7 @@ class CartController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Product added to cart!');
+        return redirect()->back()->with('success', 'Product added to cart!');
     }
 
     public function update(Request $request, Cart $cart)

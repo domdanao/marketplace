@@ -1,11 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 
 interface Order {
     id: string;
     order_number: string;
     status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
-    total_amount: number;
+    total_amount: number | string;
     created_at: string;
 }
 
@@ -40,9 +40,9 @@ interface Props {
 
 export default function BuyerDashboard({ user, stats, recent_orders, featured_products }: Props) {
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
         }).format(amount);
     };
 
@@ -58,10 +58,21 @@ export default function BuyerDashboard({ user, stats, recent_orders, featured_pr
     };
 
     return (
-        <AppLayout>
+        <StorefrontLayout>
             <Head title="Dashboard" />
 
-            <div className="space-y-6">
+            <div className="py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                            Welcome back, {user.name}!
+                        </h1>
+                        <p className="mt-2 text-gray-600 dark:text-gray-400">
+                            Here's what's happening with your orders and shopping.
+                        </p>
+                    </div>
+
+                    <div className="space-y-8">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
@@ -154,14 +165,14 @@ export default function BuyerDashboard({ user, stats, recent_orders, featured_pr
                                     Recent Orders
                                 </h3>
                                 <Link
-                                    href="/buyer/orders"
+                                    href="/orders"
                                     className="text-sm text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                                 >
                                     View all
                                 </Link>
                             </div>
                             <div className="space-y-3">
-                                {recent_orders.length > 0 ? (
+                                {recent_orders?.length > 0 ? (
                                     recent_orders.map((order) => (
                                         <div key={order.id} className="flex items-center justify-between">
                                             <div>
@@ -177,7 +188,7 @@ export default function BuyerDashboard({ user, stats, recent_orders, featured_pr
                                                     {order.status}
                                                 </span>
                                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {formatCurrency(order.total_amount)}
+                                                    {formatCurrency(Number(order.total_amount) / 100)}
                                                 </p>
                                             </div>
                                         </div>
@@ -204,7 +215,7 @@ export default function BuyerDashboard({ user, stats, recent_orders, featured_pr
                                 </Link>
                             </div>
                             <div className="space-y-3">
-                                {featured_products.length > 0 ? (
+                                {featured_products?.length > 0 ? (
                                     featured_products.map((product) => (
                                         <div key={product.id} className="flex items-center justify-between">
                                             <div>
@@ -229,7 +240,9 @@ export default function BuyerDashboard({ user, stats, recent_orders, featured_pr
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
-        </AppLayout>
+        </StorefrontLayout>
     );
 }

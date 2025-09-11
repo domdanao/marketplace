@@ -21,6 +21,8 @@ class DashboardController extends Controller
             ->get();
 
         $totalOrders = Order::where('user_id', $user->id)->count();
+        $pendingOrders = Order::where('user_id', $user->id)->where('status', 'pending')->count();
+        $completedOrders = Order::where('user_id', $user->id)->where('status', 'completed')->count();
         $totalSpent = Order::where('user_id', $user->id)
             ->where('status', 'completed')
             ->sum('total_amount');
@@ -35,9 +37,11 @@ class DashboardController extends Controller
             'user' => $user,
             'stats' => [
                 'total_orders' => $totalOrders,
+                'pending_orders' => $pendingOrders,
+                'completed_orders' => $completedOrders,
                 'total_spent' => $totalSpent,
-                'recent_orders' => $recentOrders,
             ],
+            'recent_orders' => $recentOrders,
             'featured_products' => $featuredProducts,
         ]);
     }

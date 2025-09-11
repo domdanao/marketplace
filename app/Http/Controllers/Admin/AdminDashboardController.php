@@ -377,6 +377,95 @@ class AdminDashboardController extends Controller
         ]);
     }
 
+    public function createCategoryForm()
+    {
+        return Inertia::render('Admin/Categories/Create');
+    }
+
+    public function storeCategory(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name',
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+        ]);
+
+        try {
+            $category = Category::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'is_active' => $request->get('is_active', true),
+            ]);
+
+            return redirect()
+                ->route('admin.categories')
+                ->with('success', 'Category created successfully.');
+
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to create category: '.$e->getMessage());
+        }
+    }
+
+    public function editCategoryForm(Category $category)
+    {
+        return Inertia::render('Admin/Categories/Edit', [
+            'category' => $category,
+        ]);
+    }
+
+    public function updateCategory(Request $request, Category $category)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
+            'description' => 'nullable|string|max:1000',
+            'is_active' => 'boolean',
+        ]);
+
+        try {
+            $category->update([
+                'name' => $request->name,
+                'slug' => \Illuminate\Support\Str::slug($request->name), // Update slug if name changes
+                'description' => $request->description,
+                'is_active' => $request->get('is_active', true),
+            ]);
+
+            return redirect()
+                ->route('admin.categories')
+                ->with('success', 'Category updated successfully.');
+
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to update category: '.$e->getMessage());
+        }
+    }
+
+    public function deleteCategory(Category $category)
+    {
+        try {
+            // Check if category has products
+            if ($category->products()->count() > 0) {
+                return back()->with('error', 'Cannot delete category that has products. Please reassign products first.');
+            }
+
+            // Check if category is used by stores
+            if ($category->stores()->count() > 0) {
+                return back()->with('error', 'Cannot delete category that is used by stores. Please reassign stores first.');
+            }
+
+            $category->delete();
+
+            return redirect()
+                ->route('admin.categories')
+                ->with('success', 'Category deleted successfully.');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to delete category: '.$e->getMessage());
+        }
+    }
+
     public function payments(Request $request)
     {
         $query = Payment::with(['order.user']);

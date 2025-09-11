@@ -74,9 +74,9 @@ export default function ProductsIndex({ products, categories, filters }: Props) 
     };
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
         }).format(price);
     };
 
@@ -214,7 +214,7 @@ export default function ProductsIndex({ products, categories, filters }: Props) 
                                         <Link href={`/products/${product.slug}`}>
                                             <div className="aspect-w-1 aspect-h-1">
                                                 <img 
-                                                    src={product.images[0] || '/placeholder-product.jpg'} 
+                                                    src={product.images[0] || '/placeholder-product.svg'} 
                                                     alt={product.name}
                                                     className="w-full h-48 object-cover"
                                                 />

@@ -6,11 +6,8 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
-use App\Models\Product;
-use App\Services\MagpieService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -53,11 +50,20 @@ class OrderController extends Controller
         $storeGroups = $cartItems->groupBy('product.store_id');
         $totalAmount = $cartItems->sum('total_price');
 
+        // Get user's last billing info from most recent order
+        $lastOrder = Order::where('user_id', $request->user()->id)
+            ->whereNotNull('billing_info')
+            ->latest()
+            ->first();
+
+        $defaultBillingInfo = $lastOrder?->billing_info ?? [];
+
         return Inertia::render('Checkout/Index', [
             'cartItems' => $cartItems,
             'storeGroups' => $storeGroups,
             'totalAmount' => $totalAmount,
-            'formattedTotal' => '$'.number_format($totalAmount / 100, 2),
+            'formattedTotal' => '₱'.number_format($totalAmount / 100, 2),
+            'defaultBillingInfo' => $defaultBillingInfo,
         ]);
     }
 
@@ -94,7 +100,18 @@ class OrderController extends Controller
 
         return DB::transaction(function () use ($request, $cartItems) {
             $totalAmount = $cartItems->sum('total_price');
-            $magpieService = new MagpieService;
+
+            // Check for recent duplicate orders (within last 30 seconds)
+            $recentOrder = Order::where('user_id', $request->user()->id)
+                ->where('status', 'pending')
+                ->where('total_amount', $totalAmount)
+                ->where('created_at', '>', now()->subSeconds(30))
+                ->first();
+
+            if ($recentOrder) {
+                // Return existing order instead of creating duplicate
+                return redirect()->route('payment.create-session', ['order' => $recentOrder->id]);
+            }
 
             // Create main order
             $order = Order::create([
@@ -132,56 +149,15 @@ class OrderController extends Controller
             }
 
             // Create payment record
-            $payment = Payment::create([
+            Payment::create([
                 'order_id' => $order->id,
                 'amount' => $totalAmount / 100, // Convert centavos to pesos
                 'currency' => 'PHP',
                 'status' => 'pending',
             ]);
 
-            try {
-                // Create Magpie checkout session
-                $checkoutResponse = $magpieService->createCheckoutSession([
-                    'amount' => $totalAmount,
-                    'currency' => 'PHP',
-                    'description' => "Order #{$order->order_number}",
-                    'success_url' => route('payment.success', ['order' => $order->id]),
-                    'cancel_url' => route('payment.cancel', ['order' => $order->id]),
-                    'metadata' => [
-                        'order_id' => $order->id,
-                        'payment_id' => $payment->id,
-                    ],
-                ]);
-
-                // Update payment with Magpie transaction ID
-                $payment->update([
-                    'magpie_transaction_id' => $checkoutResponse['id'] ?? null,
-                    'magpie_response' => $checkoutResponse,
-                ]);
-
-                // Clear cart
-                Cart::where('user_id', $request->user()->id)->delete();
-
-                // Redirect to Magpie checkout
-                if (isset($checkoutResponse['checkout_url'])) {
-                    return redirect($checkoutResponse['checkout_url']);
-                }
-
-                // Fallback: redirect to order page
-                return redirect()->route('orders.show', $order)
-                    ->with('success', 'Order placed successfully! Order #'.$order->order_number);
-
-            } catch (\Exception $e) {
-                Log::error('Payment processing failed', [
-                    'order_id' => $order->id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $payment->update(['status' => 'failed']);
-
-                return redirect()->route('orders.show', $order)
-                    ->with('error', 'Payment processing failed. Please try again or contact support.');
-            }
+            // Redirect to payment session creation (cart will be cleared after successful payment creation)
+            return redirect()->route('payment.create-session', ['order' => $order->id]);
         });
     }
 
@@ -204,6 +180,38 @@ class OrderController extends Controller
             $order->update(['status' => 'cancelled']);
 
             return back()->with('success', 'Order cancelled successfully.');
+        });
+    }
+
+    public function destroy(Order $order)
+    {
+        $this->authorize('delete', $order);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Only pending orders can be deleted.');
+        }
+
+        return DB::transaction(function () use ($order) {
+            // Restore stock for physical products
+            foreach ($order->orderItems as $orderItem) {
+                if ($orderItem->product && ! $orderItem->product->digital_product) {
+                    $orderItem->product->increment('quantity', $orderItem->quantity);
+                }
+            }
+
+            // Delete related records first to avoid foreign key constraints
+            if ($order->payment) {
+                $order->payment->delete();
+            }
+
+            // Delete order items
+            $order->orderItems()->delete();
+
+            // Delete the order
+            $order->delete();
+
+            return redirect()->route('orders.index')
+                ->with('success', 'Order deleted successfully.');
         });
     }
 }

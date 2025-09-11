@@ -3,135 +3,38 @@
 namespace App\Services;
 
 use Exception;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class MagpieService
 {
-    private string $apiKey;
-
-    private string $baseUrl;
-
-    private string $customersUrl;
-
-    private string $chargesUrl;
-
-    private string $checkoutUrl;
-
     public function __construct()
     {
-        $this->apiKey = config('services.magpie.api_key');
-        $this->baseUrl = config('services.magpie.api_base_url');
-        $this->customersUrl = config('services.magpie.customers_url');
-        $this->chargesUrl = config('services.magpie.charges_url');
-        $this->checkoutUrl = config('services.magpie.checkout_url');
+        // Using direct HTTP requests to bypass SDK ValidationException bug
     }
 
-    public function createCharge(array $data): array
-    {
-        $response = $this->makeRequest('POST', $this->chargesUrl, [
-            'amount' => $data['amount'],
-            'currency' => $data['currency'] ?? 'PHP',
-            'description' => $data['description'] ?? null,
-            'customer_id' => $data['customer_id'] ?? null,
-            'metadata' => $data['metadata'] ?? [],
-            'source' => $data['source'] ?? null,
-        ]);
-
-        return $response->json();
-    }
-
-    public function createCustomer(array $data): array
-    {
-        $response = $this->makeRequest('POST', $this->customersUrl, [
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'metadata' => $data['metadata'] ?? [],
-        ]);
-
-        return $response->json();
-    }
-
-    public function retrieveCharge(string $chargeId): array
-    {
-        $response = $this->makeRequest('GET', $this->chargesUrl.'/'.$chargeId);
-
-        return $response->json();
-    }
-
-    public function refundCharge(string $chargeId, ?int $amount = null): array
-    {
-        $payload = [];
-        if ($amount !== null) {
-            $payload['amount'] = $amount;
-        }
-
-        $response = $this->makeRequest('POST', $this->chargesUrl.'/'.$chargeId.'/refund', $payload);
-
-        return $response->json();
-    }
-
+    /**
+     * Create a checkout session with Magpie
+     */
     public function createCheckoutSession(array $data): array
     {
-        $response = $this->makeRequest('POST', $this->checkoutUrl, [
-            'amount' => $data['amount'],
-            'currency' => $data['currency'] ?? 'PHP',
-            'description' => $data['description'] ?? null,
-            'success_url' => $data['success_url'],
-            'cancel_url' => $data['cancel_url'],
-            'customer_id' => $data['customer_id'] ?? null,
-            'metadata' => $data['metadata'] ?? [],
-        ]);
-
-        return $response->json();
-    }
-
-    public function verifyWebhookSignature(string $payload, string $signature, string $secret): bool
-    {
-        $expectedSignature = hash_hmac('sha256', $payload, $secret);
-
-        return hash_equals($expectedSignature, $signature);
-    }
-
-    private function makeRequest(string $method, string $url, array $data = []): Response
-    {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer '.$this->apiKey,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json',
-            ])->timeout(30);
+            $payload = $this->buildCheckoutPayload($data);
 
-            $response = match (strtoupper($method)) {
-                'GET' => $response->get($url, $data),
-                'POST' => $response->post($url, $data),
-                'PUT' => $response->put($url, $data),
-                'DELETE' => $response->delete($url, $data),
-                default => throw new Exception("Unsupported HTTP method: {$method}"),
-            };
+            Log::info('Creating Magpie checkout session', ['payload' => $payload]);
 
-            if (! $response->successful()) {
-                Log::error('Magpie API Error', [
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'url' => $url,
-                    'method' => $method,
-                ]);
+            // Use direct HTTP request to bypass SDK bug
+            $response = $this->makeDirectRequest($payload);
 
-                throw new Exception(
-                    'Magpie API request failed: '.$response->body(),
-                    $response->status()
-                );
-            }
+            Log::info('Magpie checkout session created successfully', [
+                'session_id' => $response['id'] ?? 'unknown',
+                'payment_url' => $response['payment_url'] ?? 'missing',
+            ]);
 
             return $response;
+
         } catch (Exception $e) {
-            Log::error('Magpie Service Error', [
-                'message' => $e->getMessage(),
-                'url' => $url,
-                'method' => $method,
+            Log::error('Magpie checkout session error', [
+                'error' => $e->getMessage(),
                 'data' => $data,
             ]);
 
@@ -139,11 +42,88 @@ class MagpieService
         }
     }
 
-    public function formatAmount(float $amount): int
+    /**
+     * Make direct HTTP request to Magpie checkout URL
+     */
+    private function makeDirectRequest(array $payload): array
     {
-        return (int) ($amount * 100);
+        $checkoutUrl = env('MAGPIE_CHECKOUT_URL');
+
+        Log::info('Making direct request to Magpie', [
+            'url' => $checkoutUrl,
+            'payload' => $payload,
+        ]);
+
+        $client = new \GuzzleHttp\Client([
+            'timeout' => 30,
+        ]);
+
+        $response = $client->post($checkoutUrl, [
+            'json' => $payload,
+            'headers' => [
+                'Authorization' => 'Basic '.base64_encode(env('MAGPIE_SECRET_KEY').':'),
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ],
+        ]);
+
+        return json_decode($response->getBody()->getContents(), true);
     }
 
+    /**
+     * Build the checkout payload for Magpie
+     */
+    private function buildCheckoutPayload(array $data): array
+    {
+        $payload = [
+            'cancel_url' => $data['cancel_url'],
+            'success_url' => $data['success_url'],
+            'currency' => 'php', // Required field based on Packagist docs
+            'payment_method_types' => ['card', 'qrph', 'paymaya'],
+        ];
+
+        // Add line items with correct structure for Magpie
+        if (isset($data['line_items'])) {
+            $payload['line_items'] = array_map(function ($item) {
+                return [
+                    'name' => $item['description'],
+                    'amount' => $this->formatAmount($item['amount']), // Convert to centavos
+                    'description' => $item['description'],
+                    'quantity' => $item['quantity'],
+                    'image' => null, // Optional image field
+                ];
+            }, $data['line_items']);
+        }
+
+        // Add optional fields if provided
+        if (isset($data['customer_email'])) {
+            $payload['customer_email'] = $data['customer_email'];
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Verify webhook signature
+     */
+    public function verifyWebhookSignature(string $payload, string $signature, string $secret): bool
+    {
+        $expectedSignature = hash_hmac('sha256', $payload, $secret);
+
+        return hash_equals($expectedSignature, $signature);
+    }
+
+    /**
+     * Convert amount to centavos for Magpie
+     */
+    public function formatAmount(float|string $amount): int
+    {
+        return (int) ((float) $amount * 100);
+    }
+
+    /**
+     * Convert centavos from Magpie to amount
+     */
     public function formatCurrency(int $centavos): float
     {
         return $centavos / 100;

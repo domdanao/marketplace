@@ -41,9 +41,9 @@ export default function ProductShow({ product, relatedProducts, auth }: Props) {
     const [loading, setLoading] = useState(false);
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
         }).format(price);
     };
 
@@ -59,7 +59,11 @@ export default function ProductShow({ product, relatedProducts, auth }: Props) {
         }, {
             onFinish: () => setLoading(false),
             onSuccess: () => {
-                // Show success message or update cart count
+                // Refresh page to update cart count in shared props
+                router.visit(window.location.pathname, { 
+                    preserveScroll: true,
+                    preserveState: false 
+                });
             },
         });
     };
@@ -102,7 +106,7 @@ export default function ProductShow({ product, relatedProducts, auth }: Props) {
                     <div>
                         <div className="aspect-w-1 aspect-h-1 mb-4">
                             <img 
-                                src={product.images[selectedImage] || '/placeholder-product.jpg'} 
+                                src={product.images[selectedImage] || '/placeholder-product.svg'} 
                                 alt={product.name}
                                 className="w-full h-96 object-cover rounded-lg"
                             />
@@ -262,7 +266,7 @@ export default function ProductShow({ product, relatedProducts, auth }: Props) {
                                     <Link href={`/products/${relatedProduct.slug}`}>
                                         <div className="aspect-w-1 aspect-h-1">
                                             <img 
-                                                src={relatedProduct.images[0] || '/placeholder-product.jpg'} 
+                                                src={relatedProduct.images[0] || '/placeholder-product.svg'} 
                                                 alt={relatedProduct.name}
                                                 className="w-full h-48 object-cover"
                                             />

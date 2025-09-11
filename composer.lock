@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e745e03b4cfb266592fd148dc59e9ace",
+    "content-hash": "a235de78ab860282a8dd2f91401a9472",
     "packages": [
         {
             "name": "brick/math",
@@ -2140,6 +2140,87 @@
                 }
             ],
             "time": "2024-12-08T08:18:47+00:00"
+        },
+        {
+            "name": "magpieim/magpie-php",
+            "version": "v1.1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/magpieimdev/magpie-php.git",
+                "reference": "ef5c705395caa79ef630d601d16ebb2968e52653"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/magpieimdev/magpie-php/zipball/ef5c705395caa79ef630d601d16ebb2968e52653",
+                "reference": "ef5c705395caa79ef630d601d16ebb2968e52653",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "php": "^8.1",
+                "psr/http-client": "^1.0",
+                "psr/http-message": "^1.0|^2.0",
+                "psr/log": "^1.0|^2.0|^3.0"
+            },
+            "require-dev": {
+                "laravel/framework": "^10.0",
+                "mockery/mockery": "^1.5",
+                "orchestra/testbench": "^8.0",
+                "php-cs-fixer/shim": "^3.0",
+                "phpstan/phpstan": "^1.0",
+                "phpunit/phpunit": "^10.0"
+            },
+            "suggest": {
+                "laravel/framework": "Required for Laravel integration features"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "Magpie": "Magpie\\Laravel\\Facades\\Magpie"
+                    },
+                    "providers": [
+                        "Magpie\\Laravel\\MagpieServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Magpie\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Magpie Team",
+                    "email": "support@magpie.im",
+                    "homepage": "https://magpie.im/"
+                },
+                {
+                    "name": "Jerick Coneras",
+                    "email": "jerick@magpie.im"
+                }
+            ],
+            "description": "The Magpie API Library for PHP enables you to work with Magpie APIs. Built for Laravel and modern PHP applications.",
+            "homepage": "https://github.com/magpieimdev/magpie-php",
+            "keywords": [
+                "api",
+                "credit cards",
+                "laravel",
+                "magpie",
+                "payment processing",
+                "php"
+            ],
+            "support": {
+                "docs": "https://docs.magpie.im",
+                "email": "support@magpie.im",
+                "issues": "https://github.com/magpieimdev/magpie-php/issues",
+                "source": "https://github.com/magpieimdev/magpie-php"
+            },
+            "time": "2025-09-10T00:46:19+00:00"
         },
         {
             "name": "monolog/monolog",

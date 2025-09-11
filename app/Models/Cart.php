@@ -17,6 +17,10 @@ class Cart extends Model
         'quantity',
     ];
 
+    protected $appends = [
+        'total_price',
+    ];
+
     protected function casts(): array
     {
         return [
@@ -36,11 +40,14 @@ class Cart extends Model
 
     public function getTotalPriceAttribute(): int
     {
-        return $this->product->price * $this->quantity;
+        // Get raw price in centavos and multiply by quantity
+        $rawPriceInCentavos = \DB::table('products')->where('id', $this->product_id)->value('price');
+
+        return $rawPriceInCentavos * $this->quantity;
     }
 
     public function getFormattedTotalPriceAttribute(): string
     {
-        return '$'.number_format($this->total_price / 100, 2);
+        return '₱'.number_format($this->total_price / 100, 2);
     }
 }

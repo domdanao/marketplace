@@ -19,7 +19,14 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
-        $store = $request->user()->store;
+        $user = $request->user();
+
+        if (! $user->hasApprovedMerchant()) {
+            return redirect()->route('merchant.dashboard')
+                ->with('error', 'You need an approved merchant account to manage products.');
+        }
+
+        $store = $user->merchant->store;
 
         if (! $store) {
             return redirect()->route('merchant.store.create');
@@ -43,6 +50,10 @@ class ProductController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $categories = Category::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
         return Inertia::render('Merchant/Products/Index', [
             'products' => $products,
             'filters' => [
@@ -50,6 +61,7 @@ class ProductController extends Controller
                 'status' => $request->status,
                 'category' => $request->category,
             ],
+            'categories' => $categories,
         ]);
     }
 
@@ -89,6 +101,7 @@ class ProductController extends Controller
             'quantity' => $request->boolean('digital_product', false) ? 0 : $request->quantity,
             'digital_product' => $request->boolean('digital_product', false),
             'download_url' => $request->boolean('digital_product', false) ? $request->download_url : null,
+            'images' => $request->input('images', []),
             'status' => 'draft',
         ]);
 
@@ -130,6 +143,7 @@ class ProductController extends Controller
             'quantity' => $request->boolean('digital_product', false) ? 0 : $request->quantity,
             'digital_product' => $request->boolean('digital_product', false),
             'download_url' => $request->boolean('digital_product', false) ? $request->download_url : null,
+            'images' => $request->input('images', $product->images ?? []),
         ]);
 
         return redirect()->route('merchant.products.show', $product)

@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import StorefrontLayout from '@/Layouts/StorefrontLayout';
+import Modal from 'react-modal';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 
 interface CartItem {
     id: string;
@@ -25,16 +26,25 @@ interface Props {
     cartItems: CartItem[];
     cartTotal: number;
     cartCount: number;
+    formattedTotal: string;
 }
 
-export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
+export default function CartIndex({ cartItems, cartTotal, cartCount, formattedTotal }: Props) {
     const [loadingItems, setLoadingItems] = useState<string[]>([]);
+    const [showClearDialog, setShowClearDialog] = useState(false);
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
         }).format(price);
+    };
+
+    const formatCentavos = (centavos: number) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(centavos / 100);
     };
 
     const updateQuantity = (cartItemId: string, newQuantity: number) => {
@@ -56,9 +66,12 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
     };
 
     const clearCart = () => {
-        router.delete('/cart', {
-            onBefore: () => confirm('Are you sure you want to clear your cart?'),
-        });
+        setShowClearDialog(true);
+    };
+
+    const confirmClearCart = () => {
+        router.delete('/cart');
+        setShowClearDialog(false);
     };
 
     const proceedToCheckout = () => {
@@ -132,7 +145,7 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
                                                 className="flex-shrink-0"
                                             >
                                                 <img 
-                                                    src={item.product.images[0] || '/placeholder-product.jpg'} 
+                                                    src={item.product.images?.[0] || '/placeholder-product.svg'} 
                                                     alt={item.product.name}
                                                     className="w-20 h-20 object-cover rounded-lg"
                                                 />
@@ -164,7 +177,7 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
                                                     
                                                     <div className="text-right">
                                                         <p className="text-lg font-bold text-gray-900 dark:text-white">
-                                                            {formatPrice(item.total_price)}
+                                                            {formatCentavos(item.total_price)}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -242,7 +255,7 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
                                         Subtotal ({cartCount} {cartCount === 1 ? 'item' : 'items'})
                                     </span>
                                     <span className="font-medium text-gray-900 dark:text-white">
-                                        {formatPrice(cartTotal)}
+                                        {formattedTotal}
                                     </span>
                                 </div>
                                 
@@ -266,7 +279,7 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
                                             Total
                                         </span>
                                         <span className="text-xl font-bold text-indigo-600">
-                                            {formatPrice(cartTotal)}
+                                            {formattedTotal}
                                         </span>
                                     </div>
                                 </div>
@@ -288,6 +301,56 @@ export default function CartIndex({ cartItems, cartTotal, cartCount }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* Clear Cart Modal */}
+            <Modal
+                isOpen={showClearDialog}
+                onRequestClose={() => setShowClearDialog(false)}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto p-0 outline-none relative transform transition-all duration-500 ease-in-out scale-100 opacity-100"
+                overlayClassName="fixed inset-0 flex items-center justify-center p-4 z-50 transition-all duration-500 ease-in-out"
+                style={{
+                    overlay: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        backdropFilter: 'blur(4px)'
+                    }
+                }}
+                closeTimeoutMS={500}
+                ariaHideApp={false}
+            >
+                <div className="px-6 py-4">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 dark:bg-red-900">
+                            <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <div className="ml-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Clear Cart
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Are you sure you want to clear your cart? This action will remove all {cartCount} {cartCount === 1 ? 'item' : 'items'} from your cart and cannot be undone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        onClick={() => setShowClearDialog(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={confirmClearCart}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        Clear Cart
+                    </button>
+                </div>
+            </Modal>
         </StorefrontLayout>
     );
 }

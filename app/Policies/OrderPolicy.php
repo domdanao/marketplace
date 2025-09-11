@@ -51,6 +51,12 @@ class OrderPolicy
 
     public function delete(User $user, Order $order): bool
     {
+        // Allow buyers to delete their own pending orders
+        if ($user->id === $order->user_id && $order->status === 'pending') {
+            return true;
+        }
+
+        // Admins can delete any order
         return $user->isAdmin();
     }
 

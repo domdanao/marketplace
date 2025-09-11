@@ -1,16 +1,18 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import StorefrontLayout from '@/Layouts/StorefrontLayout';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 
 interface Product {
     id: string;
     name: string;
+    slug: string;
     price: number;
     images?: string[];
     description: string;
     store: {
         id: string;
         name: string;
+        slug: string;
     };
     category: {
         id: string;
@@ -78,9 +80,9 @@ export default function StorefrontProductsIndex({ products, categories, filters 
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
+            currency: 'PHP',
         }).format(amount);
     };
 
@@ -250,7 +252,7 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                                                     {formatCurrency(product.price)}
                                                 </span>
                                                 <Link
-                                                    href={`/products/${product.id}`}
+                                                    href={`/products/${product.slug}`}
                                                     className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                                 >
                                                     View

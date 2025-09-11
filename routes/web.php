@@ -32,11 +32,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/checkout', [App\Http\Controllers\OrderController::class, 'checkout'])->name('checkout');
         Route::post('/checkout', [App\Http\Controllers\OrderController::class, 'store'])->name('store');
         Route::get('/{order}', [App\Http\Controllers\OrderController::class, 'show'])->name('show');
+        Route::delete('/{order}', [App\Http\Controllers\OrderController::class, 'destroy'])->name('destroy');
         Route::patch('/{order}/cancel', [App\Http\Controllers\OrderController::class, 'cancel'])->name('cancel');
     });
 
-    // Payment callback routes
+    // Payment routes
     Route::prefix('payment')->name('payment.')->group(function () {
+        Route::match(['get', 'post'], '/create-session/{order}', [App\Http\Controllers\PaymentController::class, 'createSession'])->name('create-session');
         Route::get('/success/{order}', [App\Http\Controllers\PaymentController::class, 'success'])->name('success');
         Route::get('/cancel/{order}', [App\Http\Controllers\PaymentController::class, 'cancel'])->name('cancel');
     });
@@ -96,9 +98,9 @@ Route::middleware(['auth', 'verified', 'merchant'])->prefix('merchant')->name('m
     Route::delete('/products/delete-image', [App\Http\Controllers\Merchant\ProductController::class, 'deleteImage'])->name('products.delete-image');
     Route::delete('/products/delete-file', [App\Http\Controllers\Merchant\ProductController::class, 'deleteDigitalFile'])->name('products.delete-file');
 
-    Route::get('/orders', function () {
-        return response()->json(['message' => 'Merchant Orders']);
-    })->name('orders');
+    // Order management
+    Route::get('/orders', [App\Http\Controllers\Merchant\OrderController::class, 'index'])->name('orders');
+    Route::get('/orders/{order}', [App\Http\Controllers\Merchant\OrderController::class, 'show'])->name('orders.show');
 
     // Analytics
     Route::get('/analytics', [App\Http\Controllers\Merchant\DashboardController::class, 'getAnalytics'])->name('analytics');
@@ -136,6 +138,11 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
 
     // Category management
     Route::get('/categories', [App\Http\Controllers\Admin\AdminDashboardController::class, 'categories'])->name('categories');
+    Route::get('/categories/create', [App\Http\Controllers\Admin\AdminDashboardController::class, 'createCategoryForm'])->name('categories.create');
+    Route::post('/categories', [App\Http\Controllers\Admin\AdminDashboardController::class, 'storeCategory'])->name('categories.store');
+    Route::get('/categories/{category}/edit', [App\Http\Controllers\Admin\AdminDashboardController::class, 'editCategoryForm'])->name('categories.edit');
+    Route::patch('/categories/{category}', [App\Http\Controllers\Admin\AdminDashboardController::class, 'updateCategory'])->name('categories.update');
+    Route::delete('/categories/{category}', [App\Http\Controllers\Admin\AdminDashboardController::class, 'deleteCategory'])->name('categories.delete');
 
     // Analytics
     Route::get('/analytics', [App\Http\Controllers\Admin\AdminDashboardController::class, 'analytics'])->name('analytics');

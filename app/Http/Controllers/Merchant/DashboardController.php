@@ -121,11 +121,33 @@ class DashboardController extends Controller
 
         // Combine stats into the expected structure
         $stats = [
+            'store' => [
+                'name' => $store->name,
+                'status' => $store->status,
+                'products_count' => $basicStats['total_products'],
+                'published_products' => $basicStats['published_products'],
+            ],
+            'orders' => [
+                'total' => $analytics['overview']['total_orders']['current'] ?? 0,
+                'pending' => 0, // TODO: Calculate pending orders
+                'processing' => 0, // TODO: Calculate processing orders
+                'completed' => 0, // TODO: Calculate completed orders
+                'this_month' => $analytics['overview']['total_orders']['current'] ?? 0,
+                'growth_percentage' => $analytics['overview']['total_orders']['growth_percentage'] ?? 0,
+            ],
+            'revenue' => [
+                'total' => $analytics['overview']['total_revenue']['current'] ?? 0,
+                'this_month' => $analytics['overview']['total_revenue']['current'] ?? 0,
+                'last_month' => $analytics['overview']['total_revenue']['previous'] ?? 0,
+                'growth_percentage' => $analytics['overview']['total_revenue']['growth_percentage'] ?? 0,
+            ],
+            'products' => [
+                'total' => $basicStats['total_products'],
+                'published' => $basicStats['published_products'],
+                'draft' => $basicStats['draft_products'],
+                'low_stock' => $basicStats['low_stock_products'],
+            ],
             'recent_orders' => $recentOrders,
-            'total_products' => $basicStats['total_products'],
-            'published_products' => $basicStats['published_products'],
-            'total_orders' => $analytics['overview']['total_orders']['current'] ?? 0,
-            'total_revenue' => $analytics['overview']['total_revenue']['current'] ?? 0,
             'low_stock_products' => $lowStockProducts,
         ];
 
@@ -147,13 +169,14 @@ class DashboardController extends Controller
         $user = $request->user();
 
         if (! $user->hasApprovedMerchant()) {
-            return response()->json(['error' => 'Merchant account not approved'], 403);
+            return redirect()->route('merchant.dashboard')
+                ->with('error', 'Merchant account not approved');
         }
 
         $store = $user->merchant->store;
 
         if (! $store) {
-            return response()->json(['error' => 'Store not found'], 404);
+            return redirect()->route('merchant.store.create');
         }
 
         $dateRange = $this->getDateRange($request);
@@ -162,7 +185,14 @@ class DashboardController extends Controller
             $dateRange
         );
 
-        return response()->json($analytics);
+        return Inertia::render('Merchant/Analytics/Index', [
+            'analytics' => $analytics,
+            'dateRange' => [
+                'start' => $dateRange['start']->format('Y-m-d'),
+                'end' => $dateRange['end']->format('Y-m-d'),
+            ],
+            'store' => $store,
+        ]);
     }
 
     private function getDateRange(Request $request): array

@@ -295,7 +295,7 @@ it('shows buyer dashboard with order stats and featured products', function () {
             ->has('stats')
             ->has('stats.total_orders')
             ->has('stats.total_spent')
-            ->has('stats.recent_orders')
+            ->has('recent_orders')
             ->has('featured_products', 6)
         );
 });

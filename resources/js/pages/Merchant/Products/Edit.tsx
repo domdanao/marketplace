@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import { Form } from '@inertiajs/react';
 import { useState } from 'react';
-import MerchantLayout from '@/Layouts/MerchantLayout';
+import MerchantLayout from '@/layouts/MerchantLayout';
+import ImageUpload from '@/components/ImageUpload';
 
 interface Category {
     id: string;
@@ -17,6 +18,7 @@ interface Product {
     quantity: number;
     digital_product: boolean;
     download_url?: string;
+    images?: string[];
     category: {
         id: string;
         name: string;
@@ -30,6 +32,7 @@ interface Props {
 
 export default function MerchantProductEdit({ product, categories }: Props) {
     const [isDigital, setIsDigital] = useState(product.digital_product);
+    const [images, setImages] = useState<string[]>(product.images || []);
 
     return (
         <MerchantLayout
@@ -231,6 +234,14 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                         )}
                                     </div>
                                 )}
+
+                                {/* Product Images */}
+                                <ImageUpload
+                                    productId={product.id}
+                                    existingImages={images}
+                                    onImagesUpdate={setImages}
+                                    maxImages={5}
+                                />
 
                                 {/* Form Actions */}
                                 <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">

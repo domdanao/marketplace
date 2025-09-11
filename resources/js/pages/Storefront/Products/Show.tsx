@@ -1,5 +1,6 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
+import { useState } from 'react';
 
 interface Product {
     id: string;
@@ -29,11 +30,29 @@ interface Props {
 }
 
 export default function ProductShow({ product, relatedProducts }: Props) {
+    const [loading, setLoading] = useState(false);
+    const { props } = usePage();
+    const auth = (props as any).auth;
+    
     const formatPrice = (price: number) => {
         return new Intl.NumberFormat('en-PH', {
             style: 'currency',
             currency: 'PHP',
         }).format(price);
+    };
+
+    const handleAddToCart = () => {
+        if (!auth?.user) {
+            router.visit('/login');
+            return;
+        }
+        
+        setLoading(true);
+        router.post(`/cart/add/${product.id}`, {
+            quantity: 1,
+        }, {
+            onFinish: () => setLoading(false),
+        });
     };
 
     return (
@@ -152,21 +171,18 @@ export default function ProductShow({ product, relatedProducts }: Props) {
 
                         {/* Add to Cart Button */}
                         <div className="mb-8">
-                            <form method="post" action="/cart">
-                                <input type="hidden" name="product_id" value={product.id} />
-                                <input type="hidden" name="quantity" value={1} />
-                                
-                                <button
-                                    type="submit"
-                                    disabled={!product.digital_product && product.quantity === 0}
-                                    className="w-full rounded-md bg-indigo-600 px-8 py-3 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
-                                >
-                                    {!product.digital_product && product.quantity === 0 
+                            <button
+                                onClick={handleAddToCart}
+                                disabled={(!product.digital_product && product.quantity === 0) || loading}
+                                className="w-full rounded-md bg-indigo-600 px-8 py-3 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500"
+                            >
+                                {loading 
+                                    ? 'Adding to Cart...' 
+                                    : !product.digital_product && product.quantity === 0 
                                         ? 'Out of Stock' 
                                         : 'Add to Cart'
-                                    }
-                                </button>
-                            </form>
+                                }
+                            </button>
                         </div>
                     </div>
                 </div>

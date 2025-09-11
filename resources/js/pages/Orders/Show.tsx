@@ -1,5 +1,8 @@
-import { Head } from '@inertiajs/react';
-import AppLayout from '@/Layouts/app-layout';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import Modal from 'react-modal';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
+import { Toast } from '@/components/ui/toast';
 
 interface OrderItem {
     id: string;
@@ -53,16 +56,71 @@ interface Order {
     };
 }
 
+interface ToastData {
+    type: 'success' | 'error' | 'warning' | 'info';
+    title: string;
+    message: string;
+}
+
 interface OrderShowProps {
     order: Order;
+    toast?: ToastData;
 }
 
 export default function OrderShow({ order }: OrderShowProps) {
+    const { flash } = usePage().props as { flash?: { toast?: ToastData } };
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isRedirecting, setIsRedirecting] = useState(false);
+    const [showToast, setShowToast] = useState(false);
+
+    useEffect(() => {
+        if (flash?.toast) {
+            setShowToast(true);
+        }
+    }, [flash?.toast]);
+
+    const handleRetryPayment = () => {
+        setIsRedirecting(true);
+        
+        // Create a temporary form and submit it to avoid CORS issues
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/payment/create-session/${order.id}`;
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            const tokenInput = document.createElement('input');
+            tokenInput.type = 'hidden';
+            tokenInput.name = '_token';
+            tokenInput.value = csrfToken;
+            form.appendChild(tokenInput);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    };
+
+    const handleDeleteOrder = () => {
+        setShowDeleteDialog(true);
+    };
+
+    const confirmDeleteOrder = () => {
+        router.delete(`/orders/${order.id}`);
+        setShowDeleteDialog(false);
+    };
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
-        }).format(amount / 100); // Convert from cents
+            currency: 'PHP',
+        }).format(amount / 100);
+    };
+
+    const formatCurrencyFromPesos = (amount: number) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(amount);
     };
 
     const getStatusColor = (status: string) => {
@@ -89,10 +147,47 @@ export default function OrderShow({ order }: OrderShowProps) {
     };
 
     return (
-        <AppLayout>
+        <StorefrontLayout>
             <Head title={`Order ${order.order_number}`} />
+            
+            {/* Toast Notification */}
+            {flash?.toast && (
+                <Toast
+                    variant={flash.toast.type === 'warning' ? 'warning' : flash.toast.type}
+                    title={flash.toast.title}
+                    description={flash.toast.message}
+                    visible={showToast}
+                    onClose={() => setShowToast(false)}
+                    duration={6000}
+                />
+            )}
+            
+            {/* Payment Redirect Loading Modal with Blur */}
+            {isRedirecting && (
+                <div className="fixed inset-0 flex items-center justify-center z-50" style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(8px)'
+                }}>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md mx-4 text-center shadow-2xl">
+                        <div className="flex justify-center mb-4">
+                            <svg className="animate-spin h-12 w-12 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                            Redirecting to Payment
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                            Please wait while we redirect you to Magpie's secure payment page...
+                        </p>
+                    </div>
+                </div>
+            )}
 
-            <div className="space-y-6 py-6">
+            <div className="py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="space-y-6">
                 {/* Order Header */}
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
                     <div className="px-4 py-5 sm:px-6">
@@ -123,6 +218,36 @@ export default function OrderShow({ order }: OrderShowProps) {
                     </div>
                 </div>
 
+                {/* Action Buttons for Pending Orders */}
+                {order.status === 'pending' && (
+                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                        <div className="px-4 py-5 sm:px-6">
+                            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Actions</h2>
+                            <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                    onClick={handleRetryPayment}
+                                    disabled={isRedirecting}
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                    </svg>
+                                    Retry Payment
+                                </button>
+                                <button
+                                    onClick={handleDeleteOrder}
+                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Delete Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Order Items */}
                     <div className="lg:col-span-2">
@@ -147,7 +272,7 @@ export default function OrderShow({ order }: OrderShowProps) {
                                                     <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
                                                         <span>Qty: {item.quantity}</span>
                                                         <span className="mx-2">•</span>
-                                                        <span>{formatCurrency(item.product_price)} each</span>
+                                                        <span>{formatCurrency(item.product_price * 100)} each</span>
                                                     </div>
                                                 </div>
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white">
@@ -211,7 +336,7 @@ export default function OrderShow({ order }: OrderShowProps) {
                                         <div className="flex items-center justify-between">
                                             <dt className="text-sm text-gray-600 dark:text-gray-400">Amount</dt>
                                             <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {formatCurrency(order.payment.amount * 100)} {order.payment.currency}
+                                                {formatCurrencyFromPesos(order.payment.amount)} {order.payment.currency}
                                             </dd>
                                         </div>
                                         {order.payment.magpie_transaction_id && (
@@ -244,7 +369,60 @@ export default function OrderShow({ order }: OrderShowProps) {
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
-        </AppLayout>
+
+
+            {/* Delete Order Modal */}
+            <Modal
+                isOpen={showDeleteDialog}
+                onRequestClose={() => setShowDeleteDialog(false)}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto p-0 outline-none relative transform transition-all duration-500 ease-in-out scale-100 opacity-100"
+                overlayClassName="fixed inset-0 flex items-center justify-center p-4 z-50 transition-all duration-500 ease-in-out"
+                style={{
+                    overlay: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        backdropFilter: 'blur(4px)'
+                    }
+                }}
+                closeTimeoutMS={500}
+                ariaHideApp={false}
+            >
+                <div className="px-6 py-4">
+                    <div className="flex items-center">
+                        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 dark:bg-red-900">
+                            <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <div className="ml-4">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                                Delete Order
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Are you sure you want to delete order #{order.order_number}? This action will remove the order and restore product inventory. This cannot be undone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        onClick={() => setShowDeleteDialog(false)}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={confirmDeleteOrder}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        Delete Order
+                    </button>
+                </div>
+            </Modal>
+        </StorefrontLayout>
     );
 }

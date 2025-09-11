@@ -224,10 +224,10 @@ it('shows merchant dashboard with approved store and stats', function () {
             ->has('store')
             ->has('stats')
             ->has('stats.recent_orders')
-            ->has('stats.total_products')
-            ->has('stats.published_products')
-            ->has('stats.total_orders')
-            ->has('stats.total_revenue')
+            ->has('stats.products.total')
+            ->has('stats.products.published')
+            ->has('stats.orders.total')
+            ->has('stats.revenue.total')
             ->has('stats.low_stock_products')
         );
 });

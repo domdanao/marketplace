@@ -1,11 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 
 interface Order {
     id: string;
     order_number: string;
     status: 'pending' | 'processing' | 'completed' | 'cancelled' | 'refunded';
-    total_amount: number;
+    total_amount: number | string;
     created_at: string;
 }
 
@@ -35,7 +35,7 @@ export default function OrdersIndex({ orders }: Props) {
     };
 
     return (
-        <AppLayout>
+        <StorefrontLayout>
             <Head title="My Orders" />
 
             <div className="py-12">
@@ -100,7 +100,7 @@ export default function OrdersIndex({ orders }: Props) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4">
                                                         <div className="text-sm text-gray-900">
-                                                            ₱{order.total_amount.toFixed(2)}
+                                                            ₱{(Number(order.total_amount) / 100).toFixed(2)}
                                                         </div>
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4">
@@ -126,6 +126,6 @@ export default function OrdersIndex({ orders }: Props) {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </StorefrontLayout>
     );
 }

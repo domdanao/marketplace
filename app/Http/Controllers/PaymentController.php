@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Services\MagpieService;
@@ -16,6 +17,125 @@ class PaymentController extends Controller
     public function __construct(MagpieService $magpieService)
     {
         $this->magpieService = $magpieService;
+    }
+
+    /**
+     * Create a new payment session
+     */
+    public function createSession(Request $request, Order $order)
+    {
+        $this->authorize('update', $order);
+
+        if ($order->status !== 'pending') {
+            return back()->with('error', 'Only pending orders can be paid.');
+        }
+
+        try {
+            // Build line items from order items
+            $lineItems = [];
+            foreach ($order->orderItems as $orderItem) {
+                $lineItems[] = [
+                    'name' => $orderItem->product_name,
+                    'amount' => $orderItem->product_price, // Amount in centavos
+                    'description' => $orderItem->product_name,
+                    'quantity' => $orderItem->quantity,
+                    'image' => $orderItem->product->images[0] ?? null,
+                ];
+            }
+
+            // Create checkout session
+            $sessionData = [
+                'line_items' => $lineItems,
+                'success_url' => route('payment.success', ['order' => $order->id]),
+                'cancel_url' => route('payment.cancel', ['order' => $order->id]),
+                'customer_email' => $order->billing_info['email'] ?? $order->user->email,
+                'customer_name' => $order->billing_info['name'] ?? $order->user->name,
+                'description' => "Order #{$order->order_number}",
+                'client_reference_id' => $order->order_number,
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'payment_id' => $order->payment?->id,
+                ],
+            ];
+
+            $response = $this->magpieService->createCheckoutSession($sessionData);
+
+            // Update payment record with session details
+            if ($order->payment) {
+                $order->payment->update([
+                    'magpie_transaction_id' => $response['id'] ?? null,
+                    'magpie_response' => $response,
+                    'status' => 'pending',
+                ]);
+            }
+
+            // Check if we got the payment_url
+            if (isset($response['payment_url'])) {
+                // Clear cart only after successful payment session creation
+                Cart::where('user_id', $order->user_id)->delete();
+
+                // Force a full page redirect (not an Inertia redirect)
+                return redirect()->away($response['payment_url']);
+            }
+
+            // Fallback error
+            return back()->with('error', 'Payment session created but no payment URL received.');
+
+        } catch (\Exception $e) {
+            Log::error('Payment session creation failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            // If payment session creation failed, restore cart items from order
+            $this->restoreCartFromOrder($order);
+
+            return back()->with('error', 'Failed to create payment session. Your cart has been restored.');
+        }
+    }
+
+    /**
+     * Restore cart items from a failed order
+     */
+    private function restoreCartFromOrder(Order $order): void
+    {
+        try {
+            foreach ($order->orderItems as $orderItem) {
+                if ($orderItem->product) {
+                    // Use updateOrCreate to handle duplicate cart items
+                    Cart::updateOrCreate(
+                        [
+                            'user_id' => $order->user_id,
+                            'product_id' => $orderItem->product_id,
+                        ],
+                        [
+                            'quantity' => $orderItem->quantity,
+                            'total_price' => $orderItem->total_price,
+                        ]
+                    );
+
+                    // Restore stock for physical products
+                    if (! $orderItem->product->digital_product) {
+                        $orderItem->product->increment('quantity', $orderItem->quantity);
+                    }
+                }
+            }
+
+            // Delete the failed order and its items
+            DB::transaction(function () use ($order) {
+                if ($order->payment) {
+                    $order->payment->delete();
+                }
+                $order->orderItems()->delete();
+                $order->delete();
+            });
+
+        } catch (\Exception $e) {
+            Log::error('Failed to restore cart from order', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function success(Request $request, Order $order)
@@ -66,7 +186,11 @@ class PaymentController extends Controller
 
             if (! $payment) {
                 return redirect()->route('orders.show', $order)
-                    ->with('error', 'Payment record not found.');
+                    ->with('toast', [
+                        'type' => 'error',
+                        'title' => 'Payment Error',
+                        'message' => 'Payment record not found.',
+                    ]);
             }
 
             // Update payment status
@@ -75,7 +199,11 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('orders.show', $order)
-                ->with('warning', 'Payment was cancelled. You can try again or contact support if needed.');
+                ->with('toast', [
+                    'type' => 'warning',
+                    'title' => 'Payment Cancelled',
+                    'message' => 'Your payment was cancelled. You can try again or contact support if needed.',
+                ]);
 
         } catch (\Exception $e) {
             Log::error('Payment cancel callback failed', [
@@ -84,7 +212,11 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('orders.show', $order)
-                ->with('error', 'There was an issue processing the payment cancellation.');
+                ->with('toast', [
+                    'type' => 'error',
+                    'title' => 'Payment Error',
+                    'message' => 'There was an issue processing the payment cancellation.',
+                ]);
         }
     }
 
