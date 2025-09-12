@@ -32,13 +32,26 @@ export default function ImageUpload({
         setUploading(true);
 
         try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            console.log('CSRF Token:', csrfToken);
+            
             const response = await fetch('/merchant/products/upload-images', {
                 method: 'POST',
                 body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                    'Accept': 'application/json',
                 },
             });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.log('Error response:', errorText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
 
             const result = await response.json();
 
@@ -71,6 +84,7 @@ export default function ImageUpload({
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 },
                 body: JSON.stringify({
@@ -172,7 +186,6 @@ export default function ImageUpload({
                                 <input
                                     ref={fileInputRef}
                                     id="image-upload"
-                                    name="image-upload"
                                     type="file"
                                     className="sr-only"
                                     multiple

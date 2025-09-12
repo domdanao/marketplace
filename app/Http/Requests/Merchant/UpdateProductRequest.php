@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Merchant;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class UpdateProductRequest extends FormRequest
 {
@@ -17,6 +18,13 @@ class UpdateProductRequest extends FormRequest
 
     public function rules(): array
     {
+        // Debug logging to see what data we receive
+        Log::info('UpdateProductRequest validation', [
+            'all_data' => $this->all(),
+            'input_data' => $this->input(),
+            'files' => $this->allFiles(),
+        ]);
+        
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'min:10', 'max:5000'],

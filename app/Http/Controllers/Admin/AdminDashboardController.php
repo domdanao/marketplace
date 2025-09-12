@@ -509,6 +509,7 @@ class AdminDashboardController extends Controller
         $totalUsers = User::count();
         $merchantsCount = User::where('role', 'merchant')->count();
         $buyersCount = User::where('role', 'buyer')->count();
+        $adminCount = User::where('role', 'admin')->count();
         $newUsersThisMonth = User::where('created_at', '>=', $currentMonth)->count();
 
         // Store stats
@@ -553,8 +554,9 @@ class AdminDashboardController extends Controller
         // Payment stats
         $completedPayments = Payment::where('status', 'completed')->count();
         $failedPayments = Payment::where('status', 'failed')->count();
-        $paymentSuccessRate = $totalOrders > 0
-            ? ($completedPayments / $totalOrders) * 100
+        $totalPayments = $completedPayments + $failedPayments;
+        $paymentSuccessRate = $totalPayments > 0
+            ? ($completedPayments / $totalPayments) * 100
             : 0;
 
         // Recent activities
@@ -577,6 +579,7 @@ class AdminDashboardController extends Controller
                 'total' => $totalUsers,
                 'merchants' => $merchantsCount,
                 'buyers' => $buyersCount,
+                'admins' => $adminCount,
                 'new_this_month' => $newUsersThisMonth,
             ],
             'stores' => [
@@ -596,7 +599,7 @@ class AdminDashboardController extends Controller
                 'last_month' => $ordersLastMonth,
                 'growth_percentage' => $ordersLastMonth > 0
                     ? (($ordersThisMonth - $ordersLastMonth) / $ordersLastMonth) * 100
-                    : ($ordersThisMonth > 0 ? 100 : 0),
+                    : 0,
             ],
             'revenue' => [
                 'total' => $totalRevenue,
@@ -604,7 +607,7 @@ class AdminDashboardController extends Controller
                 'last_month' => $revenueLastMonth,
                 'growth_percentage' => $revenueLastMonth > 0
                     ? (($revenueThisMonth - $revenueLastMonth) / $revenueLastMonth) * 100
-                    : ($revenueThisMonth > 0 ? 100 : 0),
+                    : 0,
             ],
             'payments' => [
                 'completed' => $completedPayments,

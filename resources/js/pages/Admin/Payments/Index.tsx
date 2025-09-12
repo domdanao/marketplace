@@ -68,8 +68,8 @@ export default function PaymentsIndex({ payments, paymentStats, filters }: Props
         router.get('/admin/payments');
     };
 
-    const formatCurrency = (amount: number, currency: string = 'USD') => {
-        return new Intl.NumberFormat('en-US', {
+    const formatCurrency = (amount: number, currency: string = 'PHP') => {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
             currency: currency,
         }).format(amount);

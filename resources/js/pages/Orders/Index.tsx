@@ -22,6 +22,13 @@ interface Props {
 }
 
 export default function OrdersIndex({ orders }: Props) {
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(amount / 100);
+    };
+
     const getStatusBadge = (status: Order['status']) => {
         const badges = {
             pending: 'bg-yellow-100 text-yellow-800',
@@ -100,7 +107,7 @@ export default function OrdersIndex({ orders }: Props) {
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4">
                                                         <div className="text-sm text-gray-900">
-                                                            ₱{(Number(order.total_amount) / 100).toFixed(2)}
+                                                            {formatCurrency(Number(order.total_amount))}
                                                         </div>
                                                     </td>
                                                     <td className="whitespace-nowrap px-6 py-4">

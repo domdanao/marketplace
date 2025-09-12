@@ -5,6 +5,11 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::get('/', [App\Http\Controllers\StorefrontController::class, 'index'])->name('home');
 
+// CSRF token endpoint
+Route::get('/csrf-token', function () {
+    return response()->json(['csrf_token' => csrf_token()]);
+})->name('csrf-token');
+
 // Public storefront routes
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [App\Http\Controllers\StorefrontController::class, 'index'])->name('index');

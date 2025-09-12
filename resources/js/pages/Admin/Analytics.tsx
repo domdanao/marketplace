@@ -50,10 +50,10 @@ export default function AdminAnalytics({ analytics, dateRange }: Props) {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
-        }).format(amount);
+            currency: 'PHP',
+        }).format(amount / 100);
     };
 
     return (

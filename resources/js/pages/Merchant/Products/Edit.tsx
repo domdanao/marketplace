@@ -26,13 +26,25 @@ interface Product {
 }
 
 interface Props {
-    product: Product;
+    product?: Product;
     categories: Category[];
 }
 
 export default function MerchantProductEdit({ product, categories }: Props) {
-    const [isDigital, setIsDigital] = useState(product.digital_product);
-    const [images, setImages] = useState<string[]>(product.images || []);
+    // Add safety check for product data
+    if (!product) {
+        return (
+            <MerchantLayout>
+                <div className="flex items-center justify-center min-h-64">
+                    <div className="text-gray-500 dark:text-gray-400">Loading product...</div>
+                </div>
+            </MerchantLayout>
+        );
+    }
+
+    const [isDigital, setIsDigital] = useState(product?.digital_product || false);
+    const [images, setImages] = useState<string[]>(product?.images || []);
+    const [hasSubmitted, setHasSubmitted] = useState(false);
 
     return (
         <MerchantLayout
@@ -48,7 +60,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                     </div>
                     <div className="flex space-x-2">
                         <Link
-                            href={`/merchant/products/${product.id}`}
+                            href={`/merchant/products/${product?.id || ''}`}
                             className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
                         >
                             Back to Product
@@ -63,7 +75,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                 </div>
             }
         >
-            <Head title={`Edit ${product.name} - Merchant`} />
+            <Head title={`Edit ${product?.name || 'Product'} - Merchant`} />
 
             <div className="max-w-2xl">
                 <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
@@ -73,13 +85,19 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                         </h3>
                     </div>
 
-                    <Form action={`/merchant/products/${product.id}`} method="put" className="p-6">
+                    <Form 
+                        action={`/merchant/products/${product?.id || ''}`} 
+                        method="put" 
+                        className="p-6"
+                        transform={(data) => {
+                            console.log('Form data being submitted:', data);
+                            return data;
+                        }}
+                    >
                         {({
                             errors,
-                            hasErrors,
                             processing,
                             wasSuccessful,
-                            recentlySuccessful,
                         }) => (
                             <div className="space-y-6">
                                 {/* Product Name */}
@@ -90,12 +108,12 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                     <input
                                         type="text"
                                         name="name"
-                                        defaultValue={product.name}
+                                        defaultValue={product?.name || ''}
                                         required
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         placeholder="Enter product name"
                                     />
-                                    {errors.name && (
+                                    {errors.name && hasSubmitted && (
                                         <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.name}
                                         </div>
@@ -110,12 +128,12 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                     <textarea
                                         name="description"
                                         rows={4}
-                                        defaultValue={product.description}
+                                        defaultValue={product?.description || ''}
                                         required
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         placeholder="Describe your product in detail..."
                                     />
-                                    {errors.description && (
+                                    {errors.description && hasSubmitted && (
                                         <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.description}
                                         </div>
@@ -129,7 +147,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                     </label>
                                     <select
                                         name="category_id"
-                                        defaultValue={product.category_id}
+                                        defaultValue={product?.category_id || ''}
                                         required
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                     >
@@ -140,7 +158,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.category_id && (
+                                    {errors.category_id && hasSubmitted && (
                                         <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.category_id}
                                         </div>
@@ -158,12 +176,12 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                         min="0.01"
                                         max="999999.99"
                                         step="0.01"
-                                        defaultValue={product.price}
+                                        defaultValue={product?.price || ''}
                                         required
                                         className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         placeholder="0.00"
                                     />
-                                    {errors.price && (
+                                    {errors.price && hasSubmitted && (
                                         <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.price}
                                         </div>
@@ -177,7 +195,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                             type="checkbox"
                                             name="digital_product"
                                             value="1"
-                                            checked={isDigital}
+                                            defaultChecked={product?.digital_product}
                                             onChange={(e) => setIsDigital(e.target.checked)}
                                             className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                                         />
@@ -185,7 +203,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                             This is a digital product
                                         </span>
                                     </label>
-                                    {errors.digital_product && (
+                                    {errors.digital_product && hasSubmitted && (
                                         <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                             {errors.digital_product}
                                         </div>
@@ -201,12 +219,12 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                         <input
                                             type="url"
                                             name="download_url"
-                                            defaultValue={product.download_url || ''}
+                                            defaultValue={product?.download_url || ''}
                                             required={isDigital}
                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             placeholder="https://example.com/download-link"
                                         />
-                                        {errors.download_url && (
+                                        {errors.download_url && hasSubmitted && (
                                             <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                                 {errors.download_url}
                                             </div>
@@ -222,12 +240,12 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                             name="quantity"
                                             min="0"
                                             max="999999"
-                                            defaultValue={product.quantity}
+                                            defaultValue={product?.quantity || ''}
                                             required={!isDigital}
                                             className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                             placeholder="0"
                                         />
-                                        {errors.quantity && (
+                                        {errors.quantity && hasSubmitted && (
                                             <div className="mt-1 text-sm text-red-600 dark:text-red-400">
                                                 {errors.quantity}
                                             </div>
@@ -235,18 +253,10 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                     </div>
                                 )}
 
-                                {/* Product Images */}
-                                <ImageUpload
-                                    productId={product.id}
-                                    existingImages={images}
-                                    onImagesUpdate={setImages}
-                                    maxImages={5}
-                                />
-
                                 {/* Form Actions */}
                                 <div className="flex justify-end space-x-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <Link
-                                        href={`/merchant/products/${product.id}`}
+                                        href={`/merchant/products/${product?.id || ''}`}
                                         className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                                     >
                                         Cancel
@@ -254,6 +264,7 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                                     <button
                                         type="submit"
                                         disabled={processing}
+                                        onClick={() => setHasSubmitted(true)}
                                         className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {processing ? 'Updating...' : 'Update Product'}
@@ -271,6 +282,16 @@ export default function MerchantProductEdit({ product, categories }: Props) {
                             </div>
                         )}
                     </Form>
+                    
+                    {/* Product Images - Outside form to prevent interference */}
+                    <div className="mt-6 p-6 border-t border-gray-200 dark:border-gray-700">
+                        <ImageUpload
+                            productId={product?.id || ''}
+                            existingImages={images}
+                            onImagesUpdate={setImages}
+                            maxImages={5}
+                        />
+                    </div>
                 </div>
             </div>
         </MerchantLayout>

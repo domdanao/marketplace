@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Services\FileUploadService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -133,6 +134,13 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         $this->authorize('update', $product);
+        
+        // Debug logging
+        Log::info('Product update request received', [
+            'product_id' => $product->id,
+            'request_data' => $request->all(),
+            'validation_rules' => $request->rules(),
+        ]);
 
         $product->update([
             'category_id' => $request->category_id,

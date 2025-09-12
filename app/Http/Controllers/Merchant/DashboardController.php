@@ -185,6 +185,9 @@ class DashboardController extends Controller
             $dateRange
         );
 
+        // Convert analytics data from cents to decimals for consistency
+        $analytics = $this->convertAnalyticsFromCents($analytics);
+
         return Inertia::render('Merchant/Analytics/Index', [
             'analytics' => $analytics,
             'dateRange' => [
@@ -237,5 +240,63 @@ class DashboardController extends Controller
             'low_stock_products' => $lowStockProducts,
             'out_of_stock_products' => $outOfStockProducts,
         ];
+    }
+
+    private function convertAnalyticsFromCents(array $analytics): array
+    {
+        // Convert revenue amounts from cents to decimal for consistent frontend display
+        if (isset($analytics['overview']['total_revenue'])) {
+            $analytics['overview']['total_revenue']['current'] = ($analytics['overview']['total_revenue']['current'] ?? 0) / 100;
+            $analytics['overview']['total_revenue']['previous'] = ($analytics['overview']['total_revenue']['previous'] ?? 0) / 100;
+        }
+
+        if (isset($analytics['overview']['average_order_value'])) {
+            $analytics['overview']['average_order_value']['current'] = ($analytics['overview']['average_order_value']['current'] ?? 0) / 100;
+            $analytics['overview']['average_order_value']['previous'] = ($analytics['overview']['average_order_value']['previous'] ?? 0) / 100;
+        }
+
+        if (isset($analytics['revenue'])) {
+            $analytics['revenue']['total_revenue'] = ($analytics['revenue']['total_revenue'] ?? 0) / 100;
+            $analytics['revenue']['average_daily_revenue'] = ($analytics['revenue']['average_daily_revenue'] ?? 0) / 100;
+            
+            if (isset($analytics['revenue']['highest_day']['revenue'])) {
+                $analytics['revenue']['highest_day']['revenue'] = ($analytics['revenue']['highest_day']['revenue'] ?? 0) / 100;
+            }
+
+            // Convert daily revenue data if present
+            if (isset($analytics['revenue']['daily_data'])) {
+                foreach ($analytics['revenue']['daily_data'] as &$day) {
+                    if (isset($day['revenue'])) {
+                        $day['revenue'] = ($day['revenue'] ?? 0) / 100;
+                    }
+                }
+            }
+        }
+
+        if (isset($analytics['products'])) {
+            // Convert products array if it exists
+            foreach ($analytics['products'] as &$product) {
+                // Don't convert price - it's already converted by Product model accessor
+                if (isset($product['total_revenue'])) {
+                    $product['total_revenue'] = ($product['total_revenue'] ?? 0) / 100;
+                }
+            }
+            
+            // Convert product_performance array if it exists
+            if (isset($analytics['products']['product_performance'])) {
+                foreach ($analytics['products']['product_performance'] as &$product) {
+                    // Don't convert price - it's already converted by Product model accessor
+                    if (isset($product['total_revenue'])) {
+                        $product['total_revenue'] = ($product['total_revenue'] ?? 0) / 100;
+                    }
+                }
+            }
+        }
+
+        if (isset($analytics['customers']['customer_lifetime_value'])) {
+            $analytics['customers']['customer_lifetime_value'] = ($analytics['customers']['customer_lifetime_value'] ?? 0) / 100;
+        }
+
+        return $analytics;
     }
 }

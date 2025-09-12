@@ -60,10 +60,10 @@ export default function OrdersIndex({ orders, filters }: Props) {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
-        }).format(amount);
+            currency: 'PHP',
+        }).format(amount / 100);
     };
 
     const getStatusBadge = (orderStatus: string) => {

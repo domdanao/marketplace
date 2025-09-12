@@ -49,10 +49,10 @@ interface Props {
 
 export default function AdminDashboard({ stats }: Props) {
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-PH', {
             style: 'currency',
-            currency: 'USD',
-        }).format(amount);
+            currency: 'PHP',
+        }).format(amount / 100);
     };
 
     const formatGrowth = (percentage: number) => {
@@ -98,7 +98,7 @@ export default function AdminDashboard({ stats }: Props) {
                                             {stats.users.total?.toLocaleString() ?? '0'}
                                         </dd>
                                         <dd className="text-sm text-gray-600 dark:text-gray-400">
-                                            {stats.users.merchants ?? 0} merchants, {stats.users.buyers ?? 0} buyers
+                                            {stats.users.merchants ?? 0} merchants, {stats.users.buyers ?? 0} buyers, {stats.users.admins ?? 0} admins
                                         </dd>
                                     </dl>
                                 </div>
@@ -119,7 +119,7 @@ export default function AdminDashboard({ stats }: Props) {
                                             Active Stores
                                         </dt>
                                         <dd className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {stats.stores.approved?.toLocaleString() ?? '0'}
+                                            {stats.stores.active?.toLocaleString() ?? '0'}
                                         </dd>
                                         <dd className="text-sm text-gray-600 dark:text-gray-400">
                                             {stats.stores.pending ?? 0} pending approval

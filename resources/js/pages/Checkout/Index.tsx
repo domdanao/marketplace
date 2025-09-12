@@ -69,40 +69,91 @@ export default function CheckoutIndex({ cartItems, storeGroups, totalAmount, for
         }).format(centavos / 100);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!processing && !isRedirecting) {
             setIsRedirecting(true);
             
-            // For payment flows that redirect to external services (like Magpie),
-            // we need to use a regular form submission instead of AJAX to allow
-            // the browser to properly handle the external redirect
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/orders/checkout';
-            
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken;
-                form.appendChild(csrfInput);
+            try {
+                // Refresh CSRF token before submission
+                const response = await fetch('/csrf-token', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                let freshToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                
+                if (response.ok) {
+                    const tokenData = await response.json();
+                    if (tokenData.csrf_token) {
+                        freshToken = tokenData.csrf_token;
+                        // Update the meta tag with fresh token
+                        const metaTag = document.querySelector('meta[name="csrf-token"]');
+                        if (metaTag && freshToken) {
+                            metaTag.setAttribute('content', freshToken);
+                        }
+                    }
+                }
+                
+                // For payment flows that redirect to external services (like Magpie),
+                // we need to use a regular form submission instead of AJAX to allow
+                // the browser to properly handle the external redirect
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/orders/checkout';
+                
+                // Add fresh CSRF token
+                if (freshToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = freshToken;
+                    form.appendChild(csrfInput);
+                }
+                
+                // Add form data
+                Object.entries(data).forEach(([key, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+                
+                // Submit the form
+                document.body.appendChild(form);
+                form.submit();
+            } catch (error) {
+                console.error('Failed to refresh CSRF token:', error);
+                setIsRedirecting(false);
+                // Fallback to original submission if token refresh fails
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/orders/checkout';
+                
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                if (csrfToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfToken;
+                    form.appendChild(csrfInput);
+                }
+                
+                Object.entries(data).forEach(([key, value]) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    form.appendChild(input);
+                });
+                
+                document.body.appendChild(form);
+                form.submit();
             }
-            
-            // Add form data
-            Object.entries(data).forEach(([key, value]) => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                form.appendChild(input);
-            });
-            
-            // Submit the form
-            document.body.appendChild(form);
-            form.submit();
         }
     };
 

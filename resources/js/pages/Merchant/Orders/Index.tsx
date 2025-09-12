@@ -37,6 +37,13 @@ export default function OrdersIndex({ orders, filters, statusOptions }: OrdersIn
     const [searchTerm, setSearchTerm] = useState(filters.search || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
 
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP',
+        }).format(amount / 100);
+    };
+
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         router.get('/merchant/orders', {
@@ -173,7 +180,7 @@ export default function OrdersIndex({ orders, filters, statusOptions }: OrdersIn
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                        ₱{Number(order.store_total).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                        {formatCurrency(Number(order.store_total))}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
