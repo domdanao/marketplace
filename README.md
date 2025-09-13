@@ -151,9 +151,10 @@ The template includes deployment configurations for:
 ## 📚 **Documentation**
 
 - [**Template Usage Guide**](docs/TEMPLATE_USAGE.md) - How to customize this template
-- [**Installation Guide**](docs/installation.md) - Detailed setup instructions  
-- [**Customization Guide**](docs/customization.md) - Branding and feature customization
-- [**Deployment Guide**](docs/deployment.md) - Production deployment instructions
+- [**Customization Guide**](docs/CUSTOMIZATION_GUIDE.md) - Branding and feature customization
+- [**File Status Reference**](docs/FILES_STATUS.md) - Track implementation progress
+- [**Next Steps Guide**](docs/NEXT_STEPS.md) - Post-setup development guidance
+- [**Repository Management**](docs/REPOSITORY_MANAGEMENT.md) - Managing your marketplace repository
 
 ## 🤝 **Contributing**
 
@@ -178,8 +179,9 @@ MIT License - feel free to use this template for commercial projects.
 
 ## 🏗️ **Template Status**
 
-![Template Setup](https://github.com/domdanao/marketplace/workflows/Template%20Setup/badge.svg)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square)](https://github.com/domdanao/marketplace)
+[![Template Setup](https://github.com/domdanao/marketplace/workflows/Template%20Setup/badge.svg)](https://github.com/domdanao/marketplace/actions)
+[![Tests](https://github.com/domdanao/marketplace/workflows/Tests/badge.svg)](https://github.com/domdanao/marketplace/actions)
+[![Lint](https://github.com/domdanao/marketplace/workflows/Lint/badge.svg)](https://github.com/domdanao/marketplace/actions)
 [![Documentation](https://img.shields.io/badge/docs-comprehensive-blue?style=flat-square)](docs/)
 [![Template Ready](https://img.shields.io/badge/template-ready-success?style=flat-square)](https://github.com/domdanao/marketplace/generate)
 
