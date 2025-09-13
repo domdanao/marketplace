@@ -10,6 +10,18 @@ Route::get('/csrf-token', function () {
     return response()->json(['csrf_token' => csrf_token()]);
 })->name('csrf-token');
 
+// Session refresh endpoint for handling 419 errors
+Route::get('/refresh-session', function () {
+    session()->regenerate();
+    if (request()->expectsJson()) {
+        return response()->json([
+            'csrf_token' => csrf_token(),
+            'message' => 'Session refreshed successfully'
+        ]);
+    }
+    return redirect()->back()->with('success', 'Session refreshed. You can now continue.');
+})->name('refresh-session');
+
 // Public storefront routes
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [App\Http\Controllers\StorefrontController::class, 'index'])->name('index');
