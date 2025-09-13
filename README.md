@@ -1,4 +1,10 @@
-# Laravel Marketplace Template
+# 🏪 Laravel Marketplace Template
+
+[![Use this template](https://img.shields.io/badge/Use%20this%20template-green?style=for-the-badge&logo=github)](https://github.com/domdanao/marketplace/generate)
+[![Release](https://img.shields.io/github/v/release/domdanao/marketplace?style=for-the-badge&logo=github)](https://github.com/domdanao/marketplace/releases)
+[![PHP Version](https://img.shields.io/badge/PHP-8.4-blue?style=for-the-badge&logo=php)](https://php.net/)
+[![Laravel Version](https://img.shields.io/badge/Laravel-12-red?style=for-the-badge&logo=laravel)](https://laravel.com/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
 
 A comprehensive, production-ready Laravel marketplace template for building e-commerce platforms with multi-vendor support, digital/physical products, and modern React frontend.
 
@@ -164,7 +170,7 @@ MIT License - feel free to use this template for commercial projects.
 
 ## 🆘 **Support**
 
-- **Template Issues**: [Open an issue](https://github.com/YOUR_USERNAME/marketplace-template/issues)
+- **Template Issues**: [Open an issue](https://github.com/domdanao/marketplace/issues)
 - **Documentation**: Check the [docs](docs/) folder
 - **Discussions**: Use GitHub Discussions for questions
 
@@ -172,10 +178,10 @@ MIT License - feel free to use this template for commercial projects.
 
 ## 🏗️ **Template Status**
 
-![Tests](https://github.com/YOUR_USERNAME/marketplace-template/workflows/Template%20Setup/badge.svg)
-![PHP Version](https://img.shields.io/badge/PHP-8.4-blue)
-![Laravel Version](https://img.shields.io/badge/Laravel-12-red)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Template Setup](https://github.com/domdanao/marketplace/workflows/Template%20Setup/badge.svg)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square)](https://github.com/domdanao/marketplace)
+[![Documentation](https://img.shields.io/badge/docs-comprehensive-blue?style=flat-square)](docs/)
+[![Template Ready](https://img.shields.io/badge/template-ready-success?style=flat-square)](https://github.com/domdanao/marketplace/generate)
 
 **Ready for production use** ✅
 
