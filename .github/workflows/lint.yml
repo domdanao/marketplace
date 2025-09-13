@@ -1,4 +1,4 @@
-name: linter
+name: Lint
 
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
         run: npm run format
 
       - name: Lint Frontend
-        run: npm run lint
+        run: npm run lint --max-warnings 100
 
       # - name: Commit Changes
       #   uses: stefanzweifel/git-auto-commit-action@v5
