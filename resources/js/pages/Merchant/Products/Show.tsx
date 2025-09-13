@@ -1,6 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { router } from '@inertiajs/react';
-import MerchantLayout from '@/Layouts/MerchantLayout';
+import MerchantLayout from '@/layouts/MerchantLayout';
+import { Head, Link, router } from '@inertiajs/react';
 
 interface Product {
     id: string;
@@ -65,23 +64,16 @@ export default function MerchantProductShow({ product }: Props) {
             header={
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            {product.name}
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Product Details
-                        </p>
+                        <h2 className="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200">{product.name}</h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Product Details</p>
                     </div>
                     <div className="flex space-x-2">
-                        <Link
-                            href="/merchant/products"
-                            className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
-                        >
+                        <Link href="/merchant/products" className="rounded bg-gray-600 px-4 py-2 font-bold text-white hover:bg-gray-700">
                             Back to Products
                         </Link>
                         <Link
                             href={`/merchant/products/${product.id}/edit`}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+                            className="rounded bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700"
                         >
                             Edit
                         </Link>
@@ -93,19 +85,17 @@ export default function MerchantProductShow({ product }: Props) {
 
             <div className="space-y-6">
                 {/* Product Header */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <div className="flex justify-between items-start">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <div className="flex items-start justify-between">
                         <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-4">
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    {product.name}
-                                </h1>
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(product.status)}`}>
+                            <div className="mb-4 flex items-center space-x-3">
+                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
+                                <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadge(product.status)}`}>
                                     {product.status}
                                 </span>
                             </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">
+
+                            <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 md:grid-cols-3 dark:text-gray-400">
                                 <div>
                                     <strong>Category:</strong> {product.category.name}
                                 </div>
@@ -132,14 +122,10 @@ export default function MerchantProductShow({ product }: Props) {
                         {/* Product Image */}
                         <div className="ml-6">
                             {product.images && product.images.length > 0 ? (
-                                <img
-                                    src={product.images[0]}
-                                    alt={product.name}
-                                    className="w-32 h-32 object-cover rounded-lg shadow"
-                                />
+                                <img src={product.images[0]} alt={product.name} className="h-32 w-32 rounded-lg object-cover shadow" />
                             ) : (
-                                <div className="w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-lg flex items-center justify-center">
-                                    <span className="text-gray-500 text-sm">No Image</span>
+                                <div className="flex h-32 w-32 items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-700">
+                                    <span className="text-sm text-gray-500">No Image</span>
                                 </div>
                             )}
                         </div>
@@ -147,10 +133,8 @@ export default function MerchantProductShow({ product }: Props) {
                 </div>
 
                 {/* Product Description */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Description
-                    </h3>
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Description</h3>
                     <div className="prose prose-sm max-w-none text-gray-600 dark:text-gray-400">
                         {product.description || 'No description provided.'}
                     </div>
@@ -158,10 +142,8 @@ export default function MerchantProductShow({ product }: Props) {
 
                 {/* Digital Product Details */}
                 {product.digital_product && product.download_url && (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Digital Product Details
-                        </h3>
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Digital Product Details</h3>
                         <div className="space-y-2">
                             <div className="text-sm">
                                 <strong className="text-gray-900 dark:text-white">Download URL:</strong>
@@ -170,7 +152,7 @@ export default function MerchantProductShow({ product }: Props) {
                                         href={product.download_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-indigo-600 hover:text-indigo-800 break-all"
+                                        className="break-all text-indigo-600 hover:text-indigo-800"
                                     >
                                         {product.download_url}
                                     </a>
@@ -181,24 +163,22 @@ export default function MerchantProductShow({ product }: Props) {
                 )}
 
                 {/* Action Buttons */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Actions
-                    </h3>
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Actions</h3>
                     <div className="flex space-x-4">
                         {product.status === 'draft' && (
                             <button
                                 onClick={handlePublish}
-                                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
                             >
                                 Publish Product
                             </button>
                         )}
-                        
+
                         {product.status === 'published' && (
                             <button
                                 onClick={handleUnpublish}
-                                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
+                                className="rounded-md bg-yellow-600 px-4 py-2 text-white hover:bg-yellow-700 focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:outline-none"
                             >
                                 Unpublish Product
                             </button>
@@ -206,14 +186,14 @@ export default function MerchantProductShow({ product }: Props) {
 
                         <Link
                             href={`/merchant/products/${product.id}/edit`}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
                         >
                             Edit Product
                         </Link>
 
                         <button
                             onClick={handleDelete}
-                            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                            className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
                         >
                             Delete Product
                         </button>

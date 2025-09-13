@@ -3,9 +3,9 @@ import { login } from '@/routes';
 import { Form, Head } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
+import FlashMessages from '@/components/FlashMessages';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
-import FlashMessages from '@/components/FlashMessages';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,9 +24,9 @@ export default function Register({ flash }: RegisterProps) {
     return (
         <AuthLayout title="Create an account" description="Enter your details below to create your account">
             <Head title="Register" />
-            
+
             <FlashMessages flash={flash} />
-            
+
             <Form
                 {...RegisteredUserController.store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}

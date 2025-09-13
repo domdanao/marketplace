@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
 import StorefrontLayout from '@/layouts/StorefrontLayout';
+import { Head, Link } from '@inertiajs/react';
 
 interface Order {
     id: string;
@@ -58,7 +58,12 @@ export default function OrdersIndex({ orders }: Props) {
                                 <div className="py-12 text-center">
                                     <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100 p-4">
                                         <svg className="h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                                            />
                                         </svg>
                                     </div>
                                     <h3 className="mb-2 text-lg font-medium text-gray-900">No orders yet</h3>
@@ -75,19 +80,19 @@ export default function OrdersIndex({ orders }: Props) {
                                     <table className="min-w-full divide-y divide-gray-200">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                                     Order
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                                     Status
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                                     Total
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                                     Date
                                                 </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                                     Actions
                                                 </th>
                                             </tr>
@@ -95,31 +100,24 @@ export default function OrdersIndex({ orders }: Props) {
                                         <tbody className="divide-y divide-gray-200 bg-white">
                                             {orders.data.map((order) => (
                                                 <tr key={order.id} className="hover:bg-gray-50">
-                                                    <td className="whitespace-nowrap px-6 py-4">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {order.order_number}
-                                                        </div>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-gray-900">{order.order_number}</div>
                                                     </td>
-                                                    <td className="whitespace-nowrap px-6 py-4">
-                                                        <span className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${getStatusBadge(order.status)}`}>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span
+                                                            className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getStatusBadge(order.status)}`}
+                                                        >
                                                             {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                                         </span>
                                                     </td>
-                                                    <td className="whitespace-nowrap px-6 py-4">
-                                                        <div className="text-sm text-gray-900">
-                                                            {formatCurrency(Number(order.total_amount))}
-                                                        </div>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-900">{formatCurrency(Number(order.total_amount))}</div>
                                                     </td>
-                                                    <td className="whitespace-nowrap px-6 py-4">
-                                                        <div className="text-sm text-gray-500">
-                                                            {new Date(order.created_at).toLocaleDateString()}
-                                                        </div>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
                                                     </td>
-                                                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium">
-                                                        <Link
-                                                            href={`/orders/${order.id}`}
-                                                            className="text-indigo-600 hover:text-indigo-900"
-                                                        >
+                                                    <td className="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                                        <Link href={`/orders/${order.id}`} className="text-indigo-600 hover:text-indigo-900">
                                                             View Details
                                                         </Link>
                                                     </td>

@@ -1,6 +1,6 @@
-import { Head, Link, router } from '@inertiajs/react';
-import AdminLayout from '@/Layouts/AdminLayout';
+import AdminLayout from '@/layouts/AdminLayout';
 import { User } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
 
 interface Merchant {
     id: string;
@@ -63,16 +63,12 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
             header={
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                            Merchant Details
-                        </h2>
-                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                            Detailed information for {merchant.business_name}
-                        </p>
+                        <h2 className="text-xl leading-tight font-semibold text-gray-800 dark:text-gray-200">Merchant Details</h2>
+                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Detailed information for {merchant.business_name}</p>
                     </div>
                     <Link
                         href="/admin/merchants"
-                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                        className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:outline-none"
                     >
                         Back to Merchants
                     </Link>
@@ -83,28 +79,26 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
 
             <div className="space-y-6">
                 {/* Status Actions */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                            <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(merchant.status)}`}>
+                            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getStatusBadge(merchant.status)}`}>
                                 {merchant.status}
                             </span>
                             {merchant.approved_at && (
                                 <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Approved on {new Date(merchant.approved_at).toLocaleDateString()}
-                                    {merchant.approved_by && (
-                                        <span> by {merchant.approved_by.name}</span>
-                                    )}
+                                    {merchant.approved_by && <span> by {merchant.approved_by.name}</span>}
                                 </p>
                             )}
                         </div>
-                        
+
                         <div className="flex space-x-2">
                             {merchant.status === 'pending' && (
                                 <>
                                     <button
                                         onClick={() => handleStatusAction('approve')}
-                                        className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                        className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
                                     >
                                         Approve
                                     </button>
@@ -113,38 +107,38 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
                                             const reason = prompt('Reason for rejection:');
                                             if (reason) handleStatusAction('reject', reason);
                                         }}
-                                        className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                        className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
                                     >
                                         Reject
                                     </button>
                                 </>
                             )}
-                            
+
                             {merchant.status === 'approved' && (
                                 <button
                                     onClick={() => {
                                         const reason = prompt('Reason for suspension (optional):');
                                         handleStatusAction('suspend', reason || undefined);
                                     }}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                                    className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Suspend
                                 </button>
                             )}
-                            
+
                             {(merchant.status === 'suspended' || merchant.status === 'rejected') && (
                                 <button
                                     onClick={() => handleStatusAction('reactivate')}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                                    className="rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Reactivate
                                 </button>
                             )}
                         </div>
                     </div>
-                    
+
                     {merchant.rejection_reason && (
-                        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900 rounded-md">
+                        <div className="mt-4 rounded-md bg-red-50 p-4 dark:bg-red-900">
                             <p className="text-sm text-red-700 dark:text-red-300">
                                 <strong>Reason:</strong> {merchant.rejection_reason}
                             </p>
@@ -153,91 +147,58 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
                 </div>
 
                 {/* Business Statistics */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Business Statistics
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Business Statistics</h3>
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-                                {merchantStats.total_products}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Total Products
-                            </p>
+                            <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{merchantStats.total_products}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Products</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                                {merchantStats.published_products}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Published
-                            </p>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">{merchantStats.published_products}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Published</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                {merchantStats.orders_received}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Orders Received
-                            </p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{merchantStats.orders_received}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Orders Received</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                                ${merchantStats.total_sales.toFixed(2)}
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Total Sales
-                            </p>
+                            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">${merchantStats.total_sales.toFixed(2)}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Sales</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Business Information */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Business Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Business Information</h3>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Business Name
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.business_name}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Business Name</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.business_name}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Business Type
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.business_type || 'Not specified'}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Business Type</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.business_type || 'Not specified'}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Tax ID
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.tax_id || 'Not provided'}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Tax ID</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.tax_id || 'Not provided'}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Phone
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.phone || 'Not provided'}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.phone || 'Not provided'}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Website
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Website</label>
                             <p className="mt-1 text-sm text-gray-900 dark:text-white">
                                 {merchant.website ? (
-                                    <a href={merchant.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
+                                    <a
+                                        href={merchant.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-indigo-600 hover:text-indigo-500"
+                                    >
                                         {merchant.website}
                                     </a>
                                 ) : (
@@ -246,60 +207,36 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
                             </p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Applied
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {new Date(merchant.created_at).toLocaleDateString()}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Applied</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{new Date(merchant.created_at).toLocaleDateString()}</p>
                         </div>
                         {merchant.business_description && (
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Business Description
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.business_description}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Business Description</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.business_description}</p>
                             </div>
                         )}
                     </div>
                 </div>
 
                 {/* Owner Information */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Owner Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                    <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Owner Information</h3>
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Name
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.user.name}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.user.name}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Email
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {merchant.user.email}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.user.email}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Member Since
-                            </label>
-                            <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                {new Date(merchant.user.created_at).toLocaleDateString()}
-                            </p>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Member Since</label>
+                            <p className="mt-1 text-sm text-gray-900 dark:text-white">{new Date(merchant.user.created_at).toLocaleDateString()}</p>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Actions
-                            </label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Actions</label>
                             <Link
                                 href={`/admin/users/${merchant.user.id}`}
                                 className="mt-1 inline-flex text-sm text-indigo-600 hover:text-indigo-500"
@@ -312,58 +249,32 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
 
                 {/* Address Information */}
                 {(merchant.address_line_1 || merchant.city || merchant.state) && (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Address Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Address Information</h3>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Address Line 1
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.address_line_1 || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address Line 1</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.address_line_1 || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Address Line 2
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.address_line_2 || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Address Line 2</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.address_line_2 || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    City
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.city || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">City</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.city || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    State
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.state || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">State</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.state || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Postal Code
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.postal_code || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Postal Code</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.postal_code || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Country
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.country || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Country</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.country || 'Not provided'}</p>
                             </div>
                         </div>
                     </div>
@@ -371,42 +282,26 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
 
                 {/* Banking Information */}
                 {(merchant.bank_name || merchant.bank_account_holder) && (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Banking Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Banking Information</h3>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Account Holder
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.bank_account_holder || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Holder</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.bank_account_holder || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Bank Name
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.bank_name || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bank Name</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.bank_name || 'Not provided'}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Account Number
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Account Number</label>
                                 <p className="mt-1 text-sm text-gray-900 dark:text-white">
                                     {merchant.bank_account_number ? '****' + merchant.bank_account_number.slice(-4) : 'Not provided'}
                                 </p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Routing Number
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.bank_routing_number || 'Not provided'}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Routing Number</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.bank_routing_number || 'Not provided'}</p>
                             </div>
                         </div>
                     </div>
@@ -414,32 +309,23 @@ export default function MerchantShow({ merchant, merchantStats }: Props) {
 
                 {/* Store Information */}
                 {merchant.store && (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                            Store Information
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                        <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Store Information</h3>
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Store Name
-                                </label>
-                                <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                                    {merchant.store.name}
-                                </p>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Store Name</label>
+                                <p className="mt-1 text-sm text-gray-900 dark:text-white">{merchant.store.name}</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Store Status
-                                </label>
-                                <span className={`inline-flex mt-1 px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(merchant.store.status)}`}>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Store Status</label>
+                                <span
+                                    className={`mt-1 inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadge(merchant.store.status)}`}
+                                >
                                     {merchant.store.status}
                                 </span>
                             </div>
                             <div className="md:col-span-2">
-                                <Link
-                                    href={`/admin/stores`}
-                                    className="inline-flex text-sm text-indigo-600 hover:text-indigo-500"
-                                >
+                                <Link href={`/admin/stores`} className="inline-flex text-sm text-indigo-600 hover:text-indigo-500">
                                     View in Store Management
                                 </Link>
                             </div>

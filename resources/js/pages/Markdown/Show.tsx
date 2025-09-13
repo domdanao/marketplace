@@ -15,22 +15,22 @@ export default function Show({ content, filename, title }: Props) {
 
             <div className="min-h-screen bg-white dark:bg-gray-950">
                 {/* Navigation Header */}
-                <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center justify-between h-16">
+                <div className="border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="flex h-16 items-center justify-between">
                             {/* Breadcrumb */}
                             <nav className="flex items-center space-x-4">
                                 <Link
                                     href="/docs"
-                                    className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                    className="flex items-center space-x-2 text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                                 >
-                                    <ArrowLeft className="w-4 h-4" />
+                                    <ArrowLeft className="h-4 w-4" />
                                     <span>Back to Documentation</span>
                                 </Link>
                                 <span className="text-gray-400">|</span>
                                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                                     <Link href="/" className="hover:text-gray-700 dark:hover:text-gray-300">
-                                        <Home className="w-4 h-4" />
+                                        <Home className="h-4 w-4" />
                                     </Link>
                                     <span>→</span>
                                     <Link href="/docs" className="hover:text-gray-700 dark:hover:text-gray-300">
@@ -45,7 +45,7 @@ export default function Show({ content, filename, title }: Props) {
                             <div className="flex items-center space-x-3">
                                 <a
                                     href={`/docs/${filename}?raw=true`}
-                                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                                    className="text-sm text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
@@ -57,25 +57,21 @@ export default function Show({ content, filename, title }: Props) {
                 </div>
 
                 {/* Main Content */}
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden">
-                        <MarkdownViewer 
-                            content={content} 
-                            fileName={filename}
-                            className="w-full"
-                        />
+                <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
+                    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                        <MarkdownViewer content={content} fileName={filename} className="w-full" />
                     </div>
                 </div>
 
                 {/* Bottom Navigation */}
-                <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mt-12 border-t border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center justify-between py-6">
                             <Link
                                 href="/docs"
-                                className="flex items-center space-x-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+                                className="flex items-center space-x-2 text-blue-600 transition-colors hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                             >
-                                <ArrowLeft className="w-4 h-4" />
+                                <ArrowLeft className="h-4 w-4" />
                                 <span>Back to all documentation</span>
                             </Link>
 

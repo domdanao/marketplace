@@ -1,8 +1,8 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
-import Modal from 'react-modal';
-import StorefrontLayout from '@/layouts/StorefrontLayout';
 import { Toast } from '@/components/ui/toast';
+import StorefrontLayout from '@/layouts/StorefrontLayout';
+import { Head, router, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
+import Modal from 'react-modal';
 
 interface OrderItem {
     id: string;
@@ -81,12 +81,12 @@ export default function OrderShow({ order }: OrderShowProps) {
 
     const handleRetryPayment = () => {
         setIsRedirecting(true);
-        
+
         // Create a temporary form and submit it to avoid CORS issues
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/payment/create-session/${order.id}`;
-        
+
         // Add CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (csrfToken) {
@@ -96,7 +96,7 @@ export default function OrderShow({ order }: OrderShowProps) {
             tokenInput.value = csrfToken;
             form.appendChild(tokenInput);
         }
-        
+
         document.body.appendChild(form);
         form.submit();
     };
@@ -149,7 +149,7 @@ export default function OrderShow({ order }: OrderShowProps) {
     return (
         <StorefrontLayout>
             <Head title={`Order ${order.order_number}`} />
-            
+
             {/* Toast Notification */}
             {flash?.toast && (
                 <Toast
@@ -161,263 +161,285 @@ export default function OrderShow({ order }: OrderShowProps) {
                     duration={6000}
                 />
             )}
-            
+
             {/* Payment Redirect Loading Modal with Blur */}
             {isRedirecting && (
-                <div className="fixed inset-0 flex items-center justify-center z-50" style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    backdropFilter: 'blur(8px)'
-                }}>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-md mx-4 text-center shadow-2xl">
-                        <div className="flex justify-center mb-4">
-                            <svg className="animate-spin h-12 w-12 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center"
+                    style={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        backdropFilter: 'blur(8px)',
+                    }}
+                >
+                    <div className="mx-4 max-w-md rounded-lg bg-white p-8 text-center shadow-2xl dark:bg-gray-800">
+                        <div className="mb-4 flex justify-center">
+                            <svg
+                                className="h-12 w-12 animate-spin text-indigo-600"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                ></path>
                             </svg>
                         </div>
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                            Redirecting to Payment
-                        </h3>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Please wait while we redirect you to Magpie's secure payment page...
-                        </p>
+                        <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">Redirecting to Payment</h3>
+                        <p className="text-gray-600 dark:text-gray-400">Please wait while we redirect you to Magpie's secure payment page...</p>
                     </div>
                 </div>
             )}
 
             <div className="py-6">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="space-y-6">
-                {/* Order Header */}
-                <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                    <div className="px-4 py-5 sm:px-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Order {order.order_number}
-                                </h1>
-                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                    Placed on {new Date(order.created_at).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                    })}
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                                    {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                                </span>
-                                <div className="text-right">
-                                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {formatCurrency(order.total_amount)}
+                        {/* Order Header */}
+                        <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+                            <div className="px-4 py-5 sm:px-6">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Order {order.order_number}</h1>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            Placed on{' '}
+                                            {new Date(order.created_at).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric',
+                                            })}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <span
+                                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(order.status)}`}
+                                        >
+                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                        </span>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                                                {formatCurrency(order.total_amount)}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Action Buttons for Pending Orders */}
-                {order.status === 'pending' && (
-                    <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                        <div className="px-4 py-5 sm:px-6">
-                            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Order Actions</h2>
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                <button
-                                    onClick={handleRetryPayment}
-                                    disabled={isRedirecting}
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                    </svg>
-                                    Retry Payment
-                                </button>
-                                <button
-                                    onClick={handleDeleteOrder}
-                                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete Order
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Order Items */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Order Items</h2>
-                            </div>
-                            <div className="border-t border-gray-200 dark:border-gray-700">
-                                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                                    {order.order_items.map((item) => (
-                                        <li key={item.id} className="px-4 py-6 sm:px-6">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                                                        {item.product_name}
-                                                    </h3>
-                                                    {item.store && (
-                                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                                                            Sold by {item.store.name}
-                                                        </p>
-                                                    )}
-                                                    <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                                        <span>Qty: {item.quantity}</span>
-                                                        <span className="mx-2">•</span>
-                                                        <span>{formatCurrency(item.product_price * 100)} each</span>
-                                                    </div>
-                                                </div>
-                                                <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                    {formatCurrency(item.total_price)}
-                                                </div>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Order Summary & Details */}
-                    <div className="space-y-6">
-                        {/* Order Summary */}
-                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Order Summary</h2>
-                            </div>
-                            <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:px-6">
-                                <dl className="space-y-3">
-                                    <div className="flex items-center justify-between">
-                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Subtotal</dt>
-                                        <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                                            {formatCurrency(order.subtotal)}
-                                        </dd>
-                                    </div>
-                                    {order.tax_amount && (
-                                        <div className="flex items-center justify-between">
-                                            <dt className="text-sm text-gray-600 dark:text-gray-400">Tax</dt>
-                                            <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {formatCurrency(order.tax_amount)}
-                                            </dd>
-                                        </div>
-                                    )}
-                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-3 flex items-center justify-between">
-                                        <dt className="text-base font-medium text-gray-900 dark:text-white">Total</dt>
-                                        <dd className="text-base font-medium text-gray-900 dark:text-white">
-                                            {formatCurrency(order.total_amount)}
-                                        </dd>
-                                    </div>
-                                </dl>
-                            </div>
-                        </div>
-
-                        {/* Payment Information */}
-                        {order.payment && (
-                            <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                        {/* Action Buttons for Pending Orders */}
+                        {order.status === 'pending' && (
+                            <div className="rounded-lg bg-white shadow dark:bg-gray-800">
                                 <div className="px-4 py-5 sm:px-6">
-                                    <h2 className="text-lg font-medium text-gray-900 dark:text-white">Payment</h2>
-                                </div>
-                                <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:px-6">
-                                    <dl className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <dt className="text-sm text-gray-600 dark:text-gray-400">Status</dt>
-                                            <dd className={`text-sm font-medium ${getPaymentStatusColor(order.payment.status)}`}>
-                                                {order.payment.status.charAt(0).toUpperCase() + order.payment.status.slice(1)}
-                                            </dd>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <dt className="text-sm text-gray-600 dark:text-gray-400">Amount</dt>
-                                            <dd className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {formatCurrencyFromPesos(order.payment.amount)} {order.payment.currency}
-                                            </dd>
-                                        </div>
-                                        {order.payment.magpie_transaction_id && (
-                                            <div className="flex items-center justify-between">
-                                                <dt className="text-sm text-gray-600 dark:text-gray-400">Transaction ID</dt>
-                                                <dd className="text-sm font-mono text-gray-900 dark:text-white">
-                                                    {order.payment.magpie_transaction_id}
-                                                </dd>
-                                            </div>
-                                        )}
-                                    </dl>
+                                    <h2 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Order Actions</h2>
+                                    <div className="flex flex-col gap-3 sm:flex-row">
+                                        <button
+                                            onClick={handleRetryPayment}
+                                            disabled={isRedirecting}
+                                            className="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                                />
+                                            </svg>
+                                            Retry Payment
+                                        </button>
+                                        <button
+                                            onClick={handleDeleteOrder}
+                                            className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                                        >
+                                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                />
+                                            </svg>
+                                            Delete Order
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Billing Information */}
-                        <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
-                            <div className="px-4 py-5 sm:px-6">
-                                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Billing Address</h2>
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                            {/* Order Items */}
+                            <div className="lg:col-span-2">
+                                <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+                                    <div className="px-4 py-5 sm:px-6">
+                                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Order Items</h2>
+                                    </div>
+                                    <div className="border-t border-gray-200 dark:border-gray-700">
+                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+                                            {order.order_items.map((item) => (
+                                                <li key={item.id} className="px-4 py-6 sm:px-6">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex-1">
+                                                            <h3 className="text-sm font-medium text-gray-900 dark:text-white">{item.product_name}</h3>
+                                                            {item.store && (
+                                                                <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                                                    Sold by {item.store.name}
+                                                                </p>
+                                                            )}
+                                                            <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
+                                                                <span>Qty: {item.quantity}</span>
+                                                                <span className="mx-2">•</span>
+                                                                <span>{formatCurrency(item.product_price * 100)} each</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                                            {formatCurrency(item.total_price)}
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:px-6">
-                                <address className="text-sm text-gray-600 dark:text-gray-400 not-italic">
-                                    <div className="font-medium text-gray-900 dark:text-white">{order.billing_info.name}</div>
-                                    <div>{order.billing_info.address}</div>
-                                    <div>{order.billing_info.city}, {order.billing_info.postal_code}</div>
-                                    <div>{order.billing_info.country}</div>
-                                    <div className="mt-2">{order.billing_info.email}</div>
-                                </address>
+
+                            {/* Order Summary & Details */}
+                            <div className="space-y-6">
+                                {/* Order Summary */}
+                                <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+                                    <div className="px-4 py-5 sm:px-6">
+                                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Order Summary</h2>
+                                    </div>
+                                    <div className="border-t border-gray-200 px-4 py-5 sm:px-6 dark:border-gray-700">
+                                        <dl className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <dt className="text-sm text-gray-600 dark:text-gray-400">Subtotal</dt>
+                                                <dd className="text-sm font-medium text-gray-900 dark:text-white">
+                                                    {formatCurrency(order.subtotal)}
+                                                </dd>
+                                            </div>
+                                            {order.tax_amount && (
+                                                <div className="flex items-center justify-between">
+                                                    <dt className="text-sm text-gray-600 dark:text-gray-400">Tax</dt>
+                                                    <dd className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {formatCurrency(order.tax_amount)}
+                                                    </dd>
+                                                </div>
+                                            )}
+                                            <div className="flex items-center justify-between border-t border-gray-200 pt-3 dark:border-gray-700">
+                                                <dt className="text-base font-medium text-gray-900 dark:text-white">Total</dt>
+                                                <dd className="text-base font-medium text-gray-900 dark:text-white">
+                                                    {formatCurrency(order.total_amount)}
+                                                </dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </div>
+
+                                {/* Payment Information */}
+                                {order.payment && (
+                                    <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+                                        <div className="px-4 py-5 sm:px-6">
+                                            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Payment</h2>
+                                        </div>
+                                        <div className="border-t border-gray-200 px-4 py-5 sm:px-6 dark:border-gray-700">
+                                            <dl className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <dt className="text-sm text-gray-600 dark:text-gray-400">Status</dt>
+                                                    <dd className={`text-sm font-medium ${getPaymentStatusColor(order.payment.status)}`}>
+                                                        {order.payment.status.charAt(0).toUpperCase() + order.payment.status.slice(1)}
+                                                    </dd>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <dt className="text-sm text-gray-600 dark:text-gray-400">Amount</dt>
+                                                    <dd className="text-sm font-medium text-gray-900 dark:text-white">
+                                                        {formatCurrencyFromPesos(order.payment.amount)} {order.payment.currency}
+                                                    </dd>
+                                                </div>
+                                                {order.payment.magpie_transaction_id && (
+                                                    <div className="flex items-center justify-between">
+                                                        <dt className="text-sm text-gray-600 dark:text-gray-400">Transaction ID</dt>
+                                                        <dd className="font-mono text-sm text-gray-900 dark:text-white">
+                                                            {order.payment.magpie_transaction_id}
+                                                        </dd>
+                                                    </div>
+                                                )}
+                                            </dl>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Billing Information */}
+                                <div className="rounded-lg bg-white shadow dark:bg-gray-800">
+                                    <div className="px-4 py-5 sm:px-6">
+                                        <h2 className="text-lg font-medium text-gray-900 dark:text-white">Billing Address</h2>
+                                    </div>
+                                    <div className="border-t border-gray-200 px-4 py-5 sm:px-6 dark:border-gray-700">
+                                        <address className="text-sm text-gray-600 not-italic dark:text-gray-400">
+                                            <div className="font-medium text-gray-900 dark:text-white">{order.billing_info.name}</div>
+                                            <div>{order.billing_info.address}</div>
+                                            <div>
+                                                {order.billing_info.city}, {order.billing_info.postal_code}
+                                            </div>
+                                            <div>{order.billing_info.country}</div>
+                                            <div className="mt-2">{order.billing_info.email}</div>
+                                        </address>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                    </div>
-                </div>
             </div>
-
 
             {/* Delete Order Modal */}
             <Modal
                 isOpen={showDeleteDialog}
                 onRequestClose={() => setShowDeleteDialog(false)}
-                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-auto p-0 outline-none relative transform transition-all duration-500 ease-in-out scale-100 opacity-100"
+                className="relative mx-auto w-full max-w-md scale-100 transform rounded-lg bg-white p-0 opacity-100 shadow-xl transition-all duration-500 ease-in-out outline-none dark:bg-gray-800"
                 overlayClassName="fixed inset-0 flex items-center justify-center p-4 z-50 transition-all duration-500 ease-in-out"
                 style={{
                     overlay: {
                         backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        backdropFilter: 'blur(4px)'
-                    }
+                        backdropFilter: 'blur(4px)',
+                    },
                 }}
                 closeTimeoutMS={500}
                 ariaHideApp={false}
             >
                 <div className="px-6 py-4">
                     <div className="flex items-center">
-                        <div className="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-full bg-red-100 dark:bg-red-900">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
                             <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                />
                             </svg>
                         </div>
                         <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                                Delete Order
-                            </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                Are you sure you want to delete order #{order.order_number}? This action will remove the order and restore product inventory. This cannot be undone.
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Delete Order</h3>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Are you sure you want to delete order #{order.order_number}? This action will remove the order and restore product
+                                inventory. This cannot be undone.
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 px-6 py-4 flex justify-end space-x-3">
+                <div className="flex justify-end space-x-3 bg-gray-50 px-6 py-4 dark:bg-gray-700">
                     <button
                         type="button"
                         onClick={() => setShowDeleteDialog(false)}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
                         onClick={confirmDeleteOrder}
-                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        className="rounded-md border border-transparent bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:outline-none"
                     >
                         Delete Order
                     </button>

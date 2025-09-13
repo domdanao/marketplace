@@ -1,6 +1,6 @@
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
-import StorefrontLayout from '@/layouts/StorefrontLayout';
 
 interface Product {
     id: string;
@@ -90,49 +90,39 @@ export default function StorefrontProductsIndex({ products, categories, filters 
         <StorefrontLayout>
             <Head title="Products - Marketplace" />
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        Browse Products
-                    </h1>
-                    <p className="mt-2 text-gray-600 dark:text-gray-400">
-                        Discover amazing products from our marketplace
-                    </p>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Browse Products</h1>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Discover amazing products from our marketplace</p>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col gap-8 lg:flex-row">
                     {/* Filters Sidebar */}
-                    <div className="lg:w-64 flex-shrink-0">
-                        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                                Filters
-                            </h2>
+                    <div className="flex-shrink-0 lg:w-64">
+                        <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
+                            <h2 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">Filters</h2>
 
                             {/* Search */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Search
-                                </label>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
                                 <input
                                     type="text"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Search products..."
-                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
                                 />
                             </div>
 
                             {/* Category */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Category
-                                </label>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                 >
                                     <option value="">All Categories</option>
                                     {categories.map((category) => (
@@ -145,23 +135,21 @@ export default function StorefrontProductsIndex({ products, categories, filters 
 
                             {/* Price Range */}
                             <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Price Range
-                                </label>
+                                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Price Range</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     <input
                                         type="number"
                                         value={priceMin}
                                         onChange={(e) => setPriceMin(e.target.value)}
                                         placeholder="Min"
-                                        className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     />
                                     <input
                                         type="number"
                                         value={priceMax}
                                         onChange={(e) => setPriceMax(e.target.value)}
                                         placeholder="Max"
-                                        className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                        className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                                     />
                                 </div>
                             </div>
@@ -173,11 +161,9 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                                         type="checkbox"
                                         checked={digitalOnly}
                                         onChange={(e) => setDigitalOnly(e.target.checked)}
-                                        className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                        className="focus:ring-opacity-50 rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                        Digital products only
-                                    </span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Digital products only</span>
                                 </label>
                             </div>
 
@@ -185,13 +171,13 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                             <div className="space-y-2">
                                 <button
                                     onClick={handleFilter}
-                                    className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                    className="w-full rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
                                 >
                                     Apply Filters
                                 </button>
                                 <button
                                     onClick={handleReset}
-                                    className="w-full bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500"
+                                    className="w-full rounded-md bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
                                 >
                                     Reset
                                 </button>
@@ -202,7 +188,7 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                     {/* Products Grid */}
                     <div className="flex-1">
                         {/* Sort Options */}
-                        <div className="flex justify-between items-center mb-6">
+                        <div className="mb-6 flex items-center justify-between">
                             <p className="text-sm text-gray-700 dark:text-gray-300">
                                 Showing {products.data.length} of {products.total} products
                             </p>
@@ -210,7 +196,7 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                                 value={sort}
                                 onChange={(e) => setSort(e.target.value)}
                                 onBlur={handleFilter}
-                                className="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                             >
                                 <option value="newest">Newest</option>
                                 <option value="name">Name A-Z</option>
@@ -221,39 +207,29 @@ export default function StorefrontProductsIndex({ products, categories, filters 
 
                         {/* Products Grid */}
                         {products.data.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 {products.data.map((product) => (
-                                    <div key={product.id} className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                                    <div key={product.id} className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
                                         <div className="aspect-square bg-gray-200 dark:bg-gray-700">
                                             {product.images && product.images.length > 0 ? (
-                                                <img
-                                                    src={product.images[0]}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover"
-                                                />
+                                                <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
+                                                <div className="flex h-full w-full items-center justify-center">
                                                     <span className="text-gray-400">No Image</span>
                                                 </div>
                                             )}
                                         </div>
                                         <div className="p-4">
-                                            <h3 className="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                                                {product.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                                by {product.store.name}
-                                            </p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">
-                                                {product.description}
-                                            </p>
-                                            <div className="flex justify-between items-center">
+                                            <h3 className="mb-2 line-clamp-2 font-semibold text-gray-900 dark:text-white">{product.name}</h3>
+                                            <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">by {product.store.name}</p>
+                                            <p className="mb-3 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">{product.description}</p>
+                                            <div className="flex items-center justify-between">
                                                 <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                                                     {formatCurrency(product.price)}
                                                 </span>
                                                 <Link
                                                     href={`/products/${product.slug}`}
-                                                    className="bg-indigo-600 text-white px-3 py-1 rounded-md text-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                                                    className="rounded-md bg-indigo-600 px-3 py-1 text-sm text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
                                                 >
                                                     View
                                                 </Link>
@@ -263,14 +239,9 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <p className="text-gray-500 dark:text-gray-400 text-lg">
-                                    No products found matching your criteria.
-                                </p>
-                                <button
-                                    onClick={handleReset}
-                                    className="mt-4 text-indigo-600 hover:text-indigo-800 font-medium"
-                                >
+                            <div className="py-12 text-center">
+                                <p className="text-lg text-gray-500 dark:text-gray-400">No products found matching your criteria.</p>
+                                <button onClick={handleReset} className="mt-4 font-medium text-indigo-600 hover:text-indigo-800">
                                     Clear all filters
                                 </button>
                             </div>
@@ -279,15 +250,15 @@ export default function StorefrontProductsIndex({ products, categories, filters 
                         {/* Pagination */}
                         {products.last_page > 1 && (
                             <div className="mt-8 flex justify-center">
-                                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                                <nav className="relative z-0 inline-flex -space-x-px rounded-md shadow-sm">
                                     {products.links.map((link, index) => (
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`relative inline-flex items-center px-2 py-2 border text-sm font-medium ${
+                                            className={`relative inline-flex items-center border px-2 py-2 text-sm font-medium ${
                                                 link.active
-                                                    ? 'z-10 bg-indigo-50 border-indigo-500 text-indigo-600'
-                                                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                                    ? 'z-10 border-indigo-500 bg-indigo-50 text-indigo-600'
+                                                    : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
                                             } ${!link.url && 'cursor-not-allowed opacity-50'}`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />

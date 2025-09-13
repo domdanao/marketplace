@@ -1,5 +1,5 @@
+import StorefrontLayout from '@/layouts/StorefrontLayout';
 import { Head, Link } from '@inertiajs/react';
-import StorefrontLayout from '@/Layouts/StorefrontLayout';
 
 interface Product {
     id: string;
@@ -54,24 +54,22 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
 
             {/* Hero Section */}
             <section className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
                     <div className="text-center">
-                        <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                            Welcome to Our Marketplace
-                        </h1>
-                        <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
+                        <h1 className="mb-4 text-4xl font-bold md:text-6xl">Welcome to Our Marketplace</h1>
+                        <p className="mx-auto mb-8 max-w-3xl text-xl md:text-2xl">
                             Discover amazing products from local merchants. Shop with confidence and support small businesses.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <Link 
-                                href="/products" 
-                                className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                        <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                            <Link
+                                href="/products"
+                                className="rounded-lg bg-white px-8 py-3 font-semibold text-indigo-600 transition-colors hover:bg-gray-100"
                             >
                                 Browse Products
                             </Link>
-                            <Link 
-                                href="/stores" 
-                                className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition-colors"
+                            <Link
+                                href="/stores"
+                                className="rounded-lg border-2 border-white px-8 py-3 font-semibold text-white transition-colors hover:bg-white hover:text-indigo-600"
                             >
                                 Explore Stores
                             </Link>
@@ -82,24 +80,18 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
 
             {/* Stats Section */}
             <section className="py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
                         <div>
-                            <div className="text-4xl font-bold text-indigo-600 mb-2">
-                                {stats.totalProducts.toLocaleString()}+
-                            </div>
+                            <div className="mb-2 text-4xl font-bold text-indigo-600">{stats.totalProducts.toLocaleString()}+</div>
                             <div className="text-gray-600 dark:text-gray-400">Products Available</div>
                         </div>
                         <div>
-                            <div className="text-4xl font-bold text-indigo-600 mb-2">
-                                {stats.totalStores.toLocaleString()}+
-                            </div>
+                            <div className="mb-2 text-4xl font-bold text-indigo-600">{stats.totalStores.toLocaleString()}+</div>
                             <div className="text-gray-600 dark:text-gray-400">Trusted Merchants</div>
                         </div>
                         <div>
-                            <div className="text-4xl font-bold text-indigo-600 mb-2">
-                                {stats.totalCategories.toLocaleString()}+
-                            </div>
+                            <div className="mb-2 text-4xl font-bold text-indigo-600">{stats.totalCategories.toLocaleString()}+</div>
                             <div className="text-gray-600 dark:text-gray-400">Categories</div>
                         </div>
                     </div>
@@ -107,48 +99,41 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
             </section>
 
             {/* Featured Products */}
-            <section className="py-16 bg-gray-50 dark:bg-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            Featured Products
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Discover our most popular and trending items
-                        </p>
+            <section className="bg-gray-50 py-16 dark:bg-gray-800">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="mb-12 text-center">
+                        <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Featured Products</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Discover our most popular and trending items</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                         {featuredProducts.map((product) => (
-                            <div key={product.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                            <div
+                                key={product.id}
+                                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-700"
+                            >
                                 <Link href={`/products/${product.slug}`}>
                                     <div className="aspect-w-1 aspect-h-1">
-                                        <img 
-                                            src={product.images[0] || '/placeholder-product.svg'} 
+                                        <img
+                                            src={product.images[0] || '/placeholder-product.svg'}
                                             alt={product.name}
-                                            className="w-full h-48 object-cover"
+                                            className="h-48 w-full object-cover"
                                         />
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                            {product.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-                                            by {product.store.name}
-                                        </p>
-                                        <p className="text-xl font-bold text-indigo-600">
-                                            {formatPrice(product.price)}
-                                        </p>
+                                        <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">{product.name}</h3>
+                                        <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">by {product.store.name}</p>
+                                        <p className="text-xl font-bold text-indigo-600">{formatPrice(product.price)}</p>
                                     </div>
                                 </Link>
                             </div>
                         ))}
                     </div>
-                    
-                    <div className="text-center mt-8">
-                        <Link 
-                            href="/products" 
-                            className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+
+                    <div className="mt-8 text-center">
+                        <Link
+                            href="/products"
+                            className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:bg-indigo-700"
                         >
                             View All Products
                         </Link>
@@ -158,29 +143,21 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
 
             {/* Categories */}
             <section className="py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            Shop by Category
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Find exactly what you're looking for
-                        </p>
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="mb-12 text-center">
+                        <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Shop by Category</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Find exactly what you're looking for</p>
                     </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6">
                         {categories.map((category) => (
-                            <Link 
+                            <Link
                                 key={category.id}
                                 href={`/products?category=${category.slug}`}
-                                className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center"
+                                className="rounded-lg bg-white p-6 text-center shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800"
                             >
-                                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                                    {category.name}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {category.products_count} products
-                                </p>
+                                <h3 className="mb-1 font-semibold text-gray-900 dark:text-white">{category.name}</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">{category.products_count} products</p>
                             </Link>
                         ))}
                     </div>
@@ -188,58 +165,44 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
             </section>
 
             {/* Popular Stores */}
-            <section className="py-16 bg-gray-50 dark:bg-gray-800">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            Popular Stores
-                        </h2>
-                        <p className="text-gray-600 dark:text-gray-400">
-                            Shop from our top-rated merchants
-                        </p>
+            <section className="bg-gray-50 py-16 dark:bg-gray-800">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <div className="mb-12 text-center">
+                        <h2 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white">Popular Stores</h2>
+                        <p className="text-gray-600 dark:text-gray-400">Shop from our top-rated merchants</p>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {popularStores.map((store) => (
-                            <Link 
-                                key={store.id} 
+                            <Link
+                                key={store.id}
                                 href={`/stores/${store.slug}`}
-                                className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                                className="overflow-hidden rounded-lg bg-white shadow-md transition-shadow hover:shadow-lg dark:bg-gray-700"
                             >
                                 <div className="p-6">
-                                    <div className="flex items-center mb-4">
+                                    <div className="mb-4 flex items-center">
                                         {store.logo ? (
-                                            <img 
-                                                src={store.logo} 
-                                                alt={store.name} 
-                                                className="w-12 h-12 rounded-full mr-4"
-                                            />
+                                            <img src={store.logo} alt={store.name} className="mr-4 h-12 w-12 rounded-full" />
                                         ) : (
-                                            <div className="w-12 h-12 bg-gray-300 dark:bg-gray-600 rounded-full mr-4 flex items-center justify-center">
+                                            <div className="mr-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-600">
                                                 <span className="text-xl">🏪</span>
                                             </div>
                                         )}
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                {store.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {store.products_count} products
-                                            </p>
+                                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{store.name}</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{store.products_count} products</p>
                                         </div>
                                     </div>
-                                    <p className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                                        {store.description}
-                                    </p>
+                                    <p className="line-clamp-2 text-gray-600 dark:text-gray-400">{store.description}</p>
                                 </div>
                             </Link>
                         ))}
                     </div>
-                    
-                    <div className="text-center mt-8">
-                        <Link 
-                            href="/stores" 
-                            className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+
+                    <div className="mt-8 text-center">
+                        <Link
+                            href="/stores"
+                            className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white transition-colors hover:bg-indigo-700"
                         >
                             View All Stores
                         </Link>
@@ -248,17 +211,13 @@ export default function StorefrontIndex({ featuredProducts, popularStores, categ
             </section>
 
             {/* Call to Action */}
-            <section className="py-16 bg-indigo-600">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-4">
-                        Ready to Start Selling?
-                    </h2>
-                    <p className="text-xl text-indigo-200 mb-8">
-                        Join thousands of merchants already selling on our platform
-                    </p>
-                    <Link 
-                        href="/register?role=merchant" 
-                        className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+            <section className="bg-indigo-600 py-16">
+                <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
+                    <h2 className="mb-4 text-3xl font-bold text-white">Ready to Start Selling?</h2>
+                    <p className="mb-8 text-xl text-indigo-200">Join thousands of merchants already selling on our platform</p>
+                    <Link
+                        href="/register?role=merchant"
+                        className="rounded-lg bg-white px-8 py-3 font-semibold text-indigo-600 transition-colors hover:bg-gray-100"
                     >
                         Become a Merchant
                     </Link>

@@ -1,7 +1,7 @@
 import AuthenticatedSessionController from '@/actions/App/Http/Controllers/Auth/AuthenticatedSessionController';
+import FlashMessages from '@/components/FlashMessages';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
-import FlashMessages from '@/components/FlashMessages';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
