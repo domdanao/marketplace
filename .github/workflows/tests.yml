@@ -14,6 +14,17 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: marketplace_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,6 +33,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.4
+          extensions: mbstring, dom, fileinfo, pgsql
           tools: composer:v2
           coverage: xdebug
 
@@ -47,9 +59,14 @@ jobs:
         run: php artisan key:generate
 
       - name: Setup Database
-        run: |
-          touch database/database.sqlite
-          php artisan migrate --force
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: marketplace_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: password
 
       - name: Tests
         run: ./vendor/bin/pest || echo "No tests found - this is expected for a template repository"
